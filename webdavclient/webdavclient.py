@@ -176,7 +176,17 @@ class WebDavClient:
                 path,
                 remote_base_path,
             )
-            return path.split(search_str, 1)[1]
+            url_after_removing_everything_before_and_including_remote_base_name = (
+                path.split(search_str, 1)[1]
+            )
+            self.logger.error(
+                "Folder structure everything after the remote_base_path is: %s",
+                url_after_removing_everything_before_and_including_remote_base_name,
+            )
+            return url_after_removing_everything_before_and_including_remote_base_name
+        self.logger.error(
+            "Could not find search string: %s in path: %s", search_str, path
+        )
         return path
 
     def ensure_folder_exists(self, path: str) -> None:
@@ -233,16 +243,23 @@ class WebDavClient:
 
         """
         if not os.path.exists(local_base_path):
+            self.logger.info("Dir %s will be created", local_base_path)
             os.makedirs(local_base_path)
 
-        files = self.list_files(os.path.join(self.hostname, remote_base_path))
-        for file_path in files:
+        files_on_host = self.list_files(os.path.join(self.hostname, remote_base_path))
+        for file_path in files_on_host:
+            self.logger.info(
+                "Found the file: %s on current remote_base_path", file_path
+            )
             file_name = self.filter_after_global_base_path(file_path, remote_base_path)
+            self.logger.info("The pure of filename of this file is: %s", file_name)
             # Decoding the URL-encoded string
             decoded_filename = urllib.parse.unquote(file_name)
+            self.logger.info("The decoded filename version is: %s", decoded_filename)
             remote_file_url = os.path.join(
                 self.hostname, remote_base_path, file_path.split("/")[-1]
             )
+            self.logger.info("The remote file url is: %s", remote_file_url)
             local_file_path = os.path.join(local_base_path, decoded_filename)
             self.logger.debug(
                 "The current file that is stored has the full path: %s", local_file_path
