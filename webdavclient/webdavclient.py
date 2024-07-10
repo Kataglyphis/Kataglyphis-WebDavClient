@@ -179,7 +179,7 @@ class WebDavClient:
             url_after_removing_everything_before_and_including_remote_base_name = (
                 path.split(search_str, 1)[1]
             )
-            self.logger.error(
+            self.logger.info(
                 "Folder structure everything after the remote_base_path is: %s",
                 url_after_removing_everything_before_and_including_remote_base_name,
             )
@@ -247,6 +247,10 @@ class WebDavClient:
             os.makedirs(local_base_path)
 
         files_on_host = self.list_files(os.path.join(self.hostname, remote_base_path))
+
+        if len(files_on_host) == 0:
+            self.logger.info("Found no files on remote_base_path: %s", remote_base_path)
+
         for file_path in files_on_host:
             self.logger.info(
                 "Found the file: %s on current remote_base_path", file_path
@@ -324,8 +328,16 @@ class WebDavClient:
 
             # List all folders in the current remote path
             folders: list[str] = self.list_folders(current_remote_path)
-
+            if len(folders) == 0:
+                self.logger.info(
+                    "Found no subfolders for current folder: %s", current_remote_path
+                )
             # Add each subfolder to the stack
             for folder in folders:
+                self.logger.info(
+                    "Found subfolder %s for current folder: %s.",
+                    folder,
+                    current_remote_path,
+                )
                 relative_folder_path: str = os.path.join(current_remote_path, folder)
                 stack.append(relative_folder_path)
