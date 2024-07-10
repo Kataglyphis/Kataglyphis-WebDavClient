@@ -2,7 +2,7 @@
   <br>
   <a href="https://jonasheinle.de"><img src="images/logo.png" alt="logo" width="200"></a>
   <br>
-  Cataglyphis template
+  WebDav client
   <br>
 </h1>
 
@@ -13,7 +13,7 @@
   <a href="https://jonasheinle.de"><img src="images/glm_logo.png" alt="VulkanEngine" width="200"></a>
 </h1> -->
 
-<h4 align="center">A template <a href="https://jonasheinle.de" target="_blank"></a>.</h4>
+<h4 align="center">Download files via webdav easily <a href="https://jonasheinle.de" target="_blank"></a>.</h4>
 
 <!-- [![Linux build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml)
 [![Windows build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml)
@@ -75,7 +75,27 @@
 [![Kataglyphis Engine][product-screenshot2]](https://jonasheinle.de)
 [![Kataglyphis Engine][product-screenshot3]](https://jonasheinle.de) -->
 
-This project is a template. 
+This module provides an easy interface for communication via WebDav protocol
+to a remote host (f.e. you can automate downloads from your cloud).
+For certain use cases one might want to be able to automatically download
+files from your cloud. This is an easy way to do it
+
+### Usage Example:
+
+    ```python
+    Example usage of the method:
+        from webdavclient.webdavclient import WebDavClient
+        
+        hostname = "https://yourhost.de/webdav"
+        username = "Schlawiner23"
+        password = "YOUR_PERSONAL_TOKEN"
+        remote_base_path = "MyProjectFolder"
+        local_base_path = "assets"
+        webdevclient = WebDavClient(args.hostname, args.username, args.password)
+        webdevclient.download_all_files_iterative(
+            args.remote_base_path, args.local_base_path
+        )
+    ```
 
 ### Key Features
 
@@ -91,6 +111,9 @@ This project is a template.
 
 ### Dependencies
 This enumeration also includes submodules.
+
+  * Python dependencies are listed in requirements.txt and in the 
+    requirements folder
 <!-- * [Vulkan 1.3](https://www.vulkan.org/) -->
 
 ### Useful tools
@@ -151,6 +174,8 @@ Project Link: [https://github.com/Kataglyphis/...](https://github.com/Kataglyphi
 ## Literature 
 
 Some very helpful literature, tutorials, etc. 
+
+  * https://de.wikipedia.org/wiki/WebDAV
 
 <!-- CMake/C++
 * [Cpp best practices](https://github.com/cpp-best-practices/cppbestpractices)
