@@ -209,8 +209,31 @@ class WebDavClient:
         else:
             self.logger.debug("Folder already exists: %s", path)
 
+    def get_sub_path(self, full_path: str, initial_part: str) -> str:
+        """
+        Returns the sub-path after the initial part of the path.
+
+        :param full_path: The full path string.
+        :param initial_part: The initial part of the path string to be removed.
+        :return: The sub-path string after the initial part.
+        """
+        # Ensure the initial part ends with a slash
+        if not initial_part.endswith("/"):
+            initial_part += "/"
+
+        # Handle the edge case where the full path is exactly the initial part
+        if full_path == initial_part.rstrip("/"):
+            return ""
+
+        # Remove the initial part from the full path
+        if full_path.startswith(initial_part):
+            return full_path[len(initial_part) :]
+        else:
+            raise ValueError("The full path does not start with the initial part.")
+
     def download_files(
         self,
+        global_remote_base_path: str,
         remote_base_path: str,
         local_base_path: str,
     ) -> None:
@@ -264,7 +287,9 @@ class WebDavClient:
                 self.hostname, remote_base_path, file_path.split("/")[-1]
             )
             self.logger.info("The remote file url is: %s", remote_file_url)
-            local_file_path = os.path.join(local_base_path, decoded_filename)
+            sub_path = self.get_sub_path(remote_base_path, global_remote_base_path)
+            self.logger.debug("The current sub path is: %s", sub_path)
+            local_file_path = os.path.join(local_base_path, sub_path, decoded_filename)
             self.logger.debug(
                 "The current file that is stored has the full path: %s", local_file_path
             )
@@ -319,12 +344,18 @@ class WebDavClient:
         # Initialize the stack with the root directory
         stack: list[str] = [remote_base_path]
 
+        global_remote_base_path: str = remote_base_path
+
         while stack:
             current_remote_path: str = stack.pop()
             self.logger.debug("Current remote path is: %s", current_remote_path)
 
             # Download files in the current directory
-            self.download_files(current_remote_path, local_base_path)
+            self.download_files(
+                global_remote_base_path,
+                current_remote_path,
+                local_base_path,
+            )
 
             # List all folders in the current remote path
             folders: list[str] = self.list_folders(current_remote_path)
