@@ -16,12 +16,12 @@ authors = [
 ]
 description = "This package contains modules to easily communicate to a host via WebDav."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 keywords=["webdav", "cloud"]
 classifiers = [
     "Development Status :: 1 - Production/Stable",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.11",
 ]
 
 dependencies=["loguru","requests"]
@@ -31,10 +31,10 @@ Homepage = "https://github.com/Kataglyphis/WebDavClient"
 
 [tool.black]
 line-length = 88
-target-version = ['py312']
+target-version = ['py311']
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 exclude = [
