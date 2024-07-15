@@ -13,7 +13,9 @@
   <a href="https://jonasheinle.de"><img src="images/glm_logo.png" alt="VulkanEngine" width="200"></a>
 </h1> -->
 
-<h4 align="center">Download files via webdav easily <a href="https://jonasheinle.de" target="_blank"></a>.</h4>
+<h4 align="center">Download files via webdav easily. Use it to communicate to cloud storage provider (e.g. Nextcloud, ownCloud, Magenta, Synology NAS,
+QNAPS NAS) and automate your personal storage tasks.
+ <a href="https://jonasheinle.de" target="_blank"></a>.</h4>
 
 <!-- [![Linux build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml)
 [![Windows build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml)
