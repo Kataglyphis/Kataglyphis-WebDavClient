@@ -23,6 +23,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",  # For Google and NumPy style docstrings
     "sphinx.ext.viewcode",  # To include links to the source code
+    "myst_parser",  # adding .md files
 ]
 
 templates_path = ["_templates"]
@@ -34,3 +35,9 @@ exclude_patterns = []
 
 html_theme = "alabaster"
 html_static_path = ["_static"]
+
+# Enable the processing of Markdown files
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "markdown",
+}

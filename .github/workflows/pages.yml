@@ -24,6 +24,7 @@ jobs:
       - name: Setup python env
         run: |
           pip install -v -e .
+          pip install -r requirements/docs.txt
       - name : Build web page
         run: |
           cd docs/build
@@ -33,5 +34,5 @@ jobs:
         with:
           server: ${{ secrets.SERVER }}
           username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.DEV_PW }}
+          password: ${{ secrets.PASSWORD }}
           local-dir: "./docs/build/html/"
