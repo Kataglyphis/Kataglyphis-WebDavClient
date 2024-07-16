@@ -1,3 +1,3 @@
 from .webdavclient import WebDavClient
 
-__all__ = ["WebDavClient"]
+__all__: list[str] = ["WebDavClient"]
