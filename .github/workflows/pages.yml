@@ -1,0 +1,37 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Deploy web page with sphinx
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: 🚀 Deploy website on push
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4.1.7
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5.1.0
+        with:
+          python-version: "3.11"
+      # You can test your matrix by printing the current Python version
+      - name: Setup python env
+        run: |
+          pip install -v -e .
+      - name : Build web page
+        run: |
+          cd docs/build
+          make html
+      - name: 📂 Sync files to domain
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.SERVER }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.DEV_PW }}
+          local-dir: "./docs/build/html/"
