@@ -27,7 +27,7 @@ jobs:
           pip install -r requirements/docs.txt
       - name : Build web page
         run: |
-          cd docs/build
+          cd docs
           make html
       - name: 📂 Sync files to domain
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
