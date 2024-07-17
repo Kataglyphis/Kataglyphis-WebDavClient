@@ -9,7 +9,7 @@ from webdavclient import WebDavClient
 
 
 def cleanup_test_files() -> None:
-    pass
+    os.removedirs("local_data")
 
 
 def wait_for_server_to_start(url, timeout=10) -> bool:
@@ -62,10 +62,21 @@ def webdav_client() -> WebDavClient:
     return WebDavClient(hostname, username, password)
 
 
+def test_filter_after_global_base_path(webdav_client) -> None:
+    path = "/data/subfolder1/text.txt"
+    path2 = "http://localhost:8081/data"
+    remote_base_path = "data"
+    result = webdav_client.filter_after_global_base_path(path, remote_base_path)
+    result2 = webdav_client.filter_after_global_base_path(path2, remote_base_path)
+    assert result == "subfolder1/text.txt"
+    # assert result2 ==
+
+
 def test_list_files(webdav_client) -> None:
-    url = os.path.join(webdav_client.hostname, "data")
+    remote_base_path = "data"
+    url = os.path.join(webdav_client.hostname, remote_base_path)
     url = url.replace(os.sep, "/")
-    files = webdav_client.list_files(url)
+    files = webdav_client.list_files(url, remote_base_path)
     assert "/data/Readme.md" in files
 
 
@@ -76,23 +87,16 @@ def test_list_folders(webdav_client):
     assert "subfolder3" in folders
 
 
-def test_filter_after_global_base_path(webdav_client) -> None:
-    path = "/data/subfolder1/text.txt"
-    remote_base_path = "data"
-    result = webdav_client.filter_after_global_base_path(path, remote_base_path)
-    assert result == "subfolder1/text.txt"
-
-
 def test_get_sub_path(webdav_client) -> None:
     full_path = "/data/subfolder1/text.txt"
-    initial_part = "/data"
+    initial_part = "data"
     result = webdav_client.get_sub_path(full_path, initial_part)
     assert result == "subfolder1/text.txt"
 
 
 def test_download_files(webdav_client) -> None:
 
-    global_remote_base_path = "http://localhost:8081"
+    global_remote_base_path = "data"
     remote_base_path = "data"
     local_base_path = "local_data"
 
@@ -108,10 +112,8 @@ def test_download_all_files_iterative(webdav_client):
     local_base_path = "local_data"
 
     webdav_client.download_all_files_iterative(remote_base_path, local_base_path)
-    assert os.path.exists(os.path.join(local_base_path, remote_base_path, "Readme.md"))
-    assert os.path.exists(
-        os.path.join(local_base_path, remote_base_path, "subfolder1/text.txt")
-    )
+    assert os.path.exists(os.path.join(local_base_path, "Readme.md"))
+    assert os.path.exists(os.path.join(local_base_path, "subfolder1/text.txt"))
 
 
 if __name__ == "__main__":
