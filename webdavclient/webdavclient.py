@@ -57,7 +57,7 @@ class WebDavClient:
         self.logger.addHandler(console_handler)
         self.logger.addHandler(file_handler)
 
-    def list_files(self, url: str) -> list[str]:
+    def list_files(self, url: str, remote_base_path: str) -> list[str]:
         """
         This method list all files from your WebDav host that stay under the
         url
@@ -224,6 +224,7 @@ class WebDavClient:
             initial_part += "/"
 
         # Handle the edge case where the full path is exactly the initial part
+        initial_part = "/" + initial_part
         if full_path == initial_part.rstrip("/"):
             return ""
 
@@ -273,7 +274,7 @@ class WebDavClient:
         url = os.path.join(self.hostname, remote_base_path)
         # as we communicate we do not want WINDWOS \ as os.sep!
         url = url.replace(os.sep, "/")
-        files_on_host = self.list_files(url)
+        files_on_host = self.list_files(url, global_remote_base_path)
 
         if len(files_on_host) == 0:
             self.logger.info("Found no files on remote_base_path: %s", remote_base_path)
@@ -292,9 +293,14 @@ class WebDavClient:
             )
             remote_file_url = remote_file_url.replace(os.sep, "/")
             self.logger.info("The remote file url is: %s", remote_file_url)
-            sub_path = self.get_sub_path(remote_file_url, global_remote_base_path)
+            sub_path = self.get_sub_path(file_path, global_remote_base_path)
+
+            if sub_path == decoded_filename:
+                sub_path = ""
+
             self.logger.debug("The current sub path is: %s", sub_path)
             local_file_path = os.path.join(local_base_path, sub_path, decoded_filename)
+            local_file_path = local_file_path.replace(os.sep, "/")
             self.logger.debug(
                 "The current file that is stored has the full path: %s", local_file_path
             )
@@ -349,7 +355,7 @@ class WebDavClient:
         # Initialize the stack with the root directory
         stack: list[str] = [remote_base_path]
 
-        # global_remote_base_path: str = remote_base_path
+        global_remote_base_path: str = remote_base_path
 
         while stack:
             current_remote_path: str = stack.pop()
@@ -357,7 +363,7 @@ class WebDavClient:
 
             # Download files in the current directory
             self.download_files(
-                self.hostname,  # global_remote_base_path,
+                global_remote_base_path,
                 current_remote_path,
                 local_base_path,
             )
