@@ -219,20 +219,35 @@ class WebDavClient:
         :param initial_part: The initial part of the path string to be removed.
         :return: The sub-path string after the initial part.
         """
+        # Decode URL-encoded parts of the path
+        decoded_full_path = urllib.parse.unquote(full_path)
+        decoded_initial_part = urllib.parse.unquote(initial_part)
         # Ensure the initial part ends with a slash
-        if not initial_part.endswith("/"):
-            initial_part += "/"
+        if not decoded_initial_part.endswith("/"):
+            decoded_initial_part += "/"
+
+        # Find the position where the initial part ends in the full path
+        start_idx = decoded_full_path.find(decoded_initial_part)
+
+        if start_idx == -1:
+            raise ValueError("The full path does not contain the initial part.")
 
         # Handle the edge case where the full path is exactly the initial part
-        initial_part = "/" + initial_part
-        if full_path == initial_part.rstrip("/"):
+        decoded_initial_part = "/" + decoded_initial_part
+        if full_path == decoded_initial_part.rstrip("/"):
             return ""
 
         # Remove the initial part from the full path
         if full_path.startswith(initial_part):
             return full_path[len(initial_part) :]
         else:
-            raise ValueError("The full path does not start with the initial part.")
+            # Calculate the start index of the sub-path
+            sub_path_start_idx = start_idx + len(decoded_initial_part) - 1
+
+            # Extract the sub-path
+            sub_path = decoded_full_path[sub_path_start_idx:]
+
+            return sub_path
 
     def download_files(
         self,
