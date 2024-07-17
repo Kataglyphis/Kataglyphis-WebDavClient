@@ -131,6 +131,8 @@ class WebDavClient:
         """
         headers = {"Content-Type": "application/xml", "Depth": "1"}
         url: str = os.path.join(self.hostname, parent_folder)
+        # as we communicate we do not want WINDWOS \ as os.sep!
+        url = url.replace(os.sep, "/")
         response = requests.request("PROPFIND", url, auth=self.auth, headers=headers)
         if response.status_code != 207:
             error_message = "Failed to list directory contents: "
@@ -268,8 +270,10 @@ class WebDavClient:
         if not os.path.exists(local_base_path):
             self.logger.info("Dir %s will be created", local_base_path)
             os.makedirs(local_base_path)
-
-        files_on_host = self.list_files(os.path.join(self.hostname, remote_base_path))
+        url = os.path.join(self.hostname, remote_base_path)
+        # as we communicate we do not want WINDWOS \ as os.sep!
+        url = url.replace(os.sep, "/")
+        files_on_host = self.list_files(url)
 
         if len(files_on_host) == 0:
             self.logger.info("Found no files on remote_base_path: %s", remote_base_path)
@@ -286,8 +290,9 @@ class WebDavClient:
             remote_file_url = os.path.join(
                 self.hostname, remote_base_path, file_path.split("/")[-1]
             )
+            remote_file_url = remote_file_url.replace(os.sep, "/")
             self.logger.info("The remote file url is: %s", remote_file_url)
-            sub_path = self.get_sub_path(remote_base_path, global_remote_base_path)
+            sub_path = self.get_sub_path(remote_file_url, global_remote_base_path)
             self.logger.debug("The current sub path is: %s", sub_path)
             local_file_path = os.path.join(local_base_path, sub_path, decoded_filename)
             self.logger.debug(
@@ -344,7 +349,7 @@ class WebDavClient:
         # Initialize the stack with the root directory
         stack: list[str] = [remote_base_path]
 
-        global_remote_base_path: str = remote_base_path
+        # global_remote_base_path: str = remote_base_path
 
         while stack:
             current_remote_path: str = stack.pop()
@@ -352,7 +357,7 @@ class WebDavClient:
 
             # Download files in the current directory
             self.download_files(
-                global_remote_base_path,
+                self.hostname,  # global_remote_base_path,
                 current_remote_path,
                 local_base_path,
             )
@@ -371,4 +376,5 @@ class WebDavClient:
                     current_remote_path,
                 )
                 relative_folder_path: str = os.path.join(current_remote_path, folder)
+                relative_folder_path = relative_folder_path.replace(os.sep, "/")
                 stack.append(relative_folder_path)
