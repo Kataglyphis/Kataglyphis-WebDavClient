@@ -7,7 +7,7 @@ name: Deploy web page with sphinx
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
@@ -25,7 +25,12 @@ jobs:
         run: |
           pip install -v -e .
           pip install -r requirements/docs.txt
-      - name : Build web page
+          pip install -r requirements/test.txt
+      - name: Run tests
+        run: |
+          cd tests
+          pytest
+      - name: Build web page
         run: |
           cd docs
           make html

@@ -9,7 +9,14 @@ from webdavclient import WebDavClient
 
 
 def cleanup_test_files() -> None:
-    os.removedirs("local_data")
+    try:
+        shutil.rmtree("local_data")
+        shutil.rmtree("local_data2")
+        print(
+            f"The directory local_data and local_data2 and all its contents have been removed successfully."
+        )
+    except OSError as e:
+        print(f"Error : {e.strerror}")
 
 
 def wait_for_server_to_start(url, timeout=10) -> bool:
@@ -29,19 +36,19 @@ def wait_for_server_to_start(url, timeout=10) -> bool:
 def start_webdav_server():
 
     # Start the mock WebDav server
-    # server_process = subprocess.Popen([sys.executable, "mock_webdav_server.py"])
+    server_process = subprocess.Popen(["python", "mock_webdav_server.py"])
     # Wait for the server to start
     # server_started = wait_for_server_to_start("http://localhost:8081")
     # if not server_started:
     #     server_process.terminate()
     #     pytest.fail("Could not start the mock WebDAV server.")
 
-    # time.sleep(10)
+    time.sleep(4)
     yield
 
     # Terminate the server process after all tests are done
-    # server_process.terminate()
-    # server_process.wait()
+    server_process.terminate()
+    server_process.wait()
 
     # Cleanup after tests
     cleanup_test_files()
@@ -109,7 +116,7 @@ def test_download_files(webdav_client) -> None:
 def test_download_all_files_iterative(webdav_client):
 
     remote_base_path = "data"
-    local_base_path = "local_data"
+    local_base_path = "local_data2"
 
     webdav_client.download_all_files_iterative(remote_base_path, local_base_path)
     assert os.path.exists(os.path.join(local_base_path, "Readme.md"))

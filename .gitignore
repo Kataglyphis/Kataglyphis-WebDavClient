@@ -1,5 +1,6 @@
 local_data
 assets
+.vscode/launch.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

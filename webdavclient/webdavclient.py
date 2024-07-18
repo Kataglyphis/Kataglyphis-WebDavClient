@@ -310,6 +310,9 @@ class WebDavClient:
             self.logger.info("The remote file url is: %s", remote_file_url)
             sub_path = self.get_sub_path(file_path, global_remote_base_path)
 
+            if sub_path.endswith(decoded_filename):
+                sub_path = sub_path[: len(sub_path) - len(decoded_filename)]
+
             if sub_path == decoded_filename:
                 sub_path = ""
 
