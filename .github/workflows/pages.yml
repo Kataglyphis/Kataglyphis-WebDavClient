@@ -3,7 +3,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Deploy web page with sphinx
+name: Test WebDavClient + Deploy web page
 
 on:
   push:
@@ -15,21 +15,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🚚 Get latest code
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.0
       - name: Set up Python 3.11
-        uses: actions/setup-python@v5.1.0
+        uses: actions/setup-python@v5.3.0
         with:
           python-version: "3.11"
       # You can test your matrix by printing the current Python version
       - name: Setup python env
         run: |
           pip install -v -e .
-          pip install -r requirements/docs.txt
-          pip install -r requirements/test.txt
+          pip install -r requirements.txt
       - name: Run tests
         run: |
-          cd tests
-          pytest
+          pytest --cov=webdavclient --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5.0.2
+        with:
+          # If your repository is public, you can omit the token
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+
       - name: Build web page
         run: |
           cd docs

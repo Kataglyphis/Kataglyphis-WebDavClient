@@ -2,5 +2,5 @@ wsgidav
 cheroot
 pytest
 pytest-benchmark
-line_profiler
 pytest-cov
+line_profiler

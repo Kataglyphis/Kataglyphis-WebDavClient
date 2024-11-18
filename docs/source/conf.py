@@ -26,6 +26,13 @@ extensions = [
     "myst_parser",  # adding .md files
 ]
 
+myst_enable_extensions = [
+    "dollarmath",  # Enables dollar-based math syntax
+    "amsmath",  # Supports extended LaTeX math environments
+    "colon_fence",  # Allows ::: for directives
+    "deflist",  # Enables definition lists
+]
+
 templates_path = ["_templates"]
 exclude_patterns = []
 
@@ -33,7 +40,11 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "alabaster"
+html_theme = "press"
+html_theme_options = {
+    "palette": "dark",  # Set dark mode as default
+    "fixed_sidebar": True,
+}
 html_static_path = ["_static"]
 
 # Enable the processing of Markdown files
@@ -41,3 +52,6 @@ source_suffix = {
     ".rst": "restructuredtext",
     ".md": "markdown",
 }
+
+# Here we assume that the file is at _static/css/custom.css
+html_css_files = ["css/custom.css"]

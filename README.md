@@ -14,12 +14,18 @@
 </h1> -->
 
 <h4 align="center">Download files via webdav easily. Use it to communicate to cloud storage provider (e.g. Nextcloud, ownCloud, Magenta, Synology NAS,
-QNAPS NAS) and automate your personal storage tasks.
+QNAPS NAS) and automate your personal storage tasks.  
+
+</br>
+
+**__Other solutions (on pyPI) did not fit my needs and/or were not actively maintained__**
  <a href="https://jonasheinle.de" target="_blank"></a>.</h4>
 
 <!-- [![Linux build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml)
 [![Windows build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml)
-[![TopLang](https://img.shields.io/github/languages/top/Kataglyphis/GraphicsEngineVulkan)]() -->
+-->
+[![TopLang](https://img.shields.io/github/languages/top/Kataglyphis/WebDavClient)]()
+[![Codecov Coverage](https://codecov.io/gh/Kataglyphis/WebDavClient/branch/main/graph/badge.svg)](https://codecov.io/gh/Kataglyphis/WebDavClient)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/paypalme/JonasHeinle)
 [![Twitter](https://img.shields.io/twitter/follow/Cataglyphis_?style=social)](https://twitter.com/Cataglyphis_)
 
@@ -84,38 +90,41 @@ files from your cloud. This is an easy way to do it
 
 ### Usage Example:
 
-    ```python
-    Example usage of the method:
-        from webdavclient.webdavclient import WebDavClient
-        
-        hostname = "https://yourhost.de/webdav"
-        username = "Schlawiner23"
-        password = "YOUR_PERSONAL_TOKEN"
-        remote_base_path = "MyProjectFolder"
-        local_base_path = "assets"
-        webdevclient = WebDavClient(args.hostname, args.username, args.password)
-        webdevclient.download_all_files_iterative(
-            args.remote_base_path, args.local_base_path
-        )
-    ```
+```python
+Example usage of the method:
+    from webdavclient.webdavclient import WebDavClient
+    
+    hostname = "https://yourhost.de/webdav"
+    username = "Schlawiner23"
+    password = "YOUR_PERSONAL_TOKEN"
+    remote_base_path = "MyProjectFolder"
+    local_base_path = "assets"
+    webdevclient = WebDavClient(args.hostname, args.username, args.password)
+    webdevclient.download_all_files_iterative(
+        args.remote_base_path, args.local_base_path
+    )
+```
 
 ### Key Features
 
 <!-- ❌  -->
-<!-- |          Feature                    |   Implement Status |
+|          Feature                    |   Implement Status |
 | ------------------------------------| :----------------: |
-| Rasterizer                          |         ✔️         |
-| Raytracing                          |         ✔️         |
-| Path tracing                        |         ✔️         |
-| PBR support (UE4,disney,... etc.)   |         ✔️         |
-| .obj Model loading                  |         ✔️         |
-| Mip Mapping                         |         ✔️         | -->
+| Download all files from remote host |         ✔️         |
 
 ### Dependencies
+I use Python 3.11
+
 This enumeration also includes submodules.
 
-  * Python dependencies are listed in requirements.txt and in the 
-    requirements folder
+* Python dependencies are listed in requirements.txt and in the 
+  requirements folder
+
+```bash
+  conda create --name WebDavClient python=3.11
+  conda activate WebDavClient
+  pip install -r requirements.txt
+```
 <!-- * [Vulkan 1.3](https://www.vulkan.org/) -->
 
 ### Useful tools
@@ -131,10 +140,11 @@ This enumeration also includes submodules.
 
 1. Clone the repo
    ```sh
-   git clone --recurse-submodules git@github.com:Kataglyphis/....git
+   git clone git@github.com:Kataglyphis/WebDavClient.git
    ```
 
 ## Tests
+Run pytest in root directory :smile:
 
 <!-- ROADMAP -->
 ## Roadmap
@@ -163,7 +173,7 @@ Contributions are what make the open source community such an amazing place to b
 
 Jonas Heinle - [@Cataglyphis_](https://twitter.com/Cataglyphis_) - jonasheinle@googlemail.com
 
-Project Link: [https://github.com/Kataglyphis/...](https://github.com/Kataglyphis/...)
+Project Link: [https://github.com/Kataglyphis/WebDavClient](https://github.com/Kataglyphis/WebDavClient)
 
 
 <!-- ACKNOWLEDGEMENTS -->
