@@ -25,9 +25,10 @@ QNAPS NAS) and automate your personal storage tasks.
 [![Windows build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml)
 -->
 [![TopLang](https://img.shields.io/github/languages/top/Kataglyphis/WebDavClient)]()
-[![Codecov Coverage](https://codecov.io/gh/Kataglyphis/WebDavClient/branch/main/graph/badge.svg)](https://codecov.io/gh/Kataglyphis/WebDavClient)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/paypalme/JonasHeinle)
 [![Twitter](https://img.shields.io/twitter/follow/Cataglyphis_?style=social)](https://twitter.com/Cataglyphis_)
+[![Codecov Coverage](https://codecov.io/gh/Kataglyphis/WebDavClient/branch/main/graph/badge.svg)](https://codecov.io/gh/Kataglyphis/WebDavClient)
+[![Test WebDavClient + Deploy web page](https://github.com/Kataglyphis/WebDavClient/actions/workflows/pages.yml/badge.svg)](https://github.com/Kataglyphis/WebDavClient/actions/workflows/pages.yml)
 
 <p align="center">
   <a href="#about-the-project">About The Project</a> •
