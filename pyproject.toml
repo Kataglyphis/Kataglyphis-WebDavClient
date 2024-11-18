@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=70.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
@@ -14,20 +14,40 @@ version = "0.0.1"
 authors = [
   { name="Jonas Heinle", email="contact@jonasheinle.de" },
 ]
+license = {file = "LICENSE"}
 description = "This package contains modules to easily communicate to a host via WebDav."
 readme = "README.md"
+dependencies = [
+    "requests",
+    "loguru",
+]
 requires-python = ">=3.11"
 keywords=["webdav", "cloud"]
 classifiers = [
-    "Development Status :: 1 - Production/Stable",
+    "Development Status :: 5 - Production/Stable",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.11",
 ]
 
-dependencies=["loguru","requests"]
-
 [project.urls]
-Homepage = "https://github.com/Kataglyphis/WebDavClient"
+Homepage = "https://webdavclient.jonas.heinle.de"
+Source = "https://github.com/Kataglyphis/WebDavClient"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-benchmark",
+    "pytest-cov",
+    "line_profiler",
+    "wsgidav",
+    "cheroot",
+    "black",
+    "flake8",
+    "mypy",
+    "pylint",
+    "isort",
+    "pre-commit"
+]
 
 [tool.black]
 line-length = 88
