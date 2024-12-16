@@ -3,13 +3,13 @@ requires = ["setuptools>=70.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["webdavclient"]
+py-modules = ["kataglyphis_webdavclient"]
 
 [tool.setuptools.packages.find]
 exclude=["test*","models*","data*","docs*","demo*"]
 
 [project]
-name = "webdavclient"
+name = "kataglyphis_webdavclient"
 version = "0.0.1"
 authors = [
   { name="Jonas Heinle", email="contact@jonasheinle.de" },
@@ -31,7 +31,7 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://webdavclient.jonas.heinle.de"
-Source = "https://github.com/Kataglyphis/WebDavClient"
+Source = "https://github.com/Kataglyphis/Kataglyphis-WebDavClient"
 
 [project.optional-dependencies]
 dev = [

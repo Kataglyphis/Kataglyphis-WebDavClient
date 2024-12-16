@@ -1,7 +1,7 @@
-WebDavClient
+Kataglyphis-WebDavClient
 ============
 
-.. automodule:: webdavclient
+.. automodule:: kataglyphis_webdavclient
     :members:
     :undoc-members:
     :show-inheritance:

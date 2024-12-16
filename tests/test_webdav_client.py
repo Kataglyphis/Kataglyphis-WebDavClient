@@ -41,7 +41,7 @@ import pytest
 import subprocess
 import time
 import requests
-from webdavclient import WebDavClient
+from kataglyphis_webdavclient import WebDavClient
 
 
 def cleanup_test_files() -> None:
