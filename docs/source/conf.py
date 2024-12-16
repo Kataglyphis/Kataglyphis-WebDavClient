@@ -11,7 +11,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../../"))
 
-project = "WebDavClient"
+project = "Kataglyphis-WebDavClient"
 copyright = "2024, Jonas Heinle"
 author = "Jonas Heinle"
 release = "0.0.1"
