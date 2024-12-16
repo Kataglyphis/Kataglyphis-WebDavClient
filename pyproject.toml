@@ -3,13 +3,13 @@ requires = ["setuptools>=70.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["kataglyphis-webdavclient"]
+py-modules = ["kataglyphis_webdavclient"]
 
 [tool.setuptools.packages.find]
 exclude=["test*","models*","data*","docs*","demo*"]
 
 [project]
-name = "kataglyphis-webdavclient"
+name = "kataglyphis_webdavclient"
 version = "0.0.1"
 authors = [
   { name="Jonas Heinle", email="contact@jonasheinle.de" },

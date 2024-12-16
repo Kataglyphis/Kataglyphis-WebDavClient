@@ -86,7 +86,7 @@ files from your cloud. This is an easy way to do it
 
     ```python
     Example usage of the method:
-        from webdavclient.webdavclient import WebDavClient
+        from kataglyphis_webdavclient.webdavclient import WebDavClient
         
         hostname = "https://yourhost.de/webdav"
         username = "Schlawiner23"
@@ -131,7 +131,7 @@ This enumeration also includes submodules.
 
 1. Clone the repo
    ```sh
-   git clone --recurse-submodules git@github.com:Kataglyphis/....git
+   git clone --recurse-submodules git@github.com:Kataglyphis/Kataglyphis-WebDavClient.git
    ```
 
 ## Tests

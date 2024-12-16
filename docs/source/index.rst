@@ -15,7 +15,7 @@ documentation for details.
    :maxdepth: 2
    :caption: Contents:
 
-   kataglyphis-webdavclient
+   kataglyphis_webdavclient
 
 Indices and tables
 ==================
