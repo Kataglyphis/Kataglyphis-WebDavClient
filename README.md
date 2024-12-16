@@ -29,6 +29,7 @@ QNAPS NAS) and automate your personal storage tasks.
 [![Twitter](https://img.shields.io/twitter/follow/Cataglyphis_?style=social)](https://twitter.com/Cataglyphis_)
 [![Codecov Coverage](https://codecov.io/gh/Kataglyphis/WebDavClient/branch/main/graph/badge.svg)](https://codecov.io/gh/Kataglyphis/WebDavClient)
 [![Test WebDavClient + Deploy web page](https://github.com/Kataglyphis/WebDavClient/actions/workflows/pages.yml/badge.svg)](https://github.com/Kataglyphis/WebDavClient/actions/workflows/pages.yml)
+[![YouTube](https://img.shields.io/youtube/channel/subscribers/UC3LZiH4sZzzaVBCUV8knYeg?style=social)](https://www.youtube.com/channel/UC3LZiH4sZzzaVBCUV8knYeg)
 
 <p align="center">
   <a href="#about-the-project">About The Project</a> •
