@@ -31,7 +31,7 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://webdavclient.jonas.heinle.de"
-Source = "https://github.com/Kataglyphis/WebDavClient"
+Source = "https://github.com/Kataglyphis/Kataglyphis-WebDavClient"
 
 [project.optional-dependencies]
 dev = [
