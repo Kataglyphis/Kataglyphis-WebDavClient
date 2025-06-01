@@ -33,6 +33,14 @@ myst_enable_extensions = [
     "deflist",  # Enables definition lists
 ]
 
+exhale_args = {
+    "containmentFolder": "./api",
+    "rootFileName": "library_root.rst",
+    "rootFileTitle": "Library API",
+    "doxygenStripFromPath": "../..",
+    "createTreeView": True,
+}
+
 templates_path = ["_templates"]
 exclude_patterns = []
 
