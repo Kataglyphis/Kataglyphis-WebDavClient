@@ -49,6 +49,16 @@ dev = [
     "pre-commit"
 ]
 
+docs = [
+"sphinx",
+"sphinx-rtd-theme",
+"myst-parser",
+"pyyaml",
+"cmake-format",
+"breathe",
+"exhale"
+]
+
 [tool.black]
 line-length = 88
 target-version = ['py311']
