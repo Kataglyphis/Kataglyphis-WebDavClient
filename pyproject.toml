@@ -34,7 +34,7 @@ Homepage = "https://webdavclient.jonas.heinle.de"
 Source = "https://github.com/Kataglyphis/Kataglyphis-WebDavClient"
 
 [project.optional-dependencies]
-dev = [
+tests = [
     "pytest",
     "pytest-benchmark",
     "pytest-cov",
@@ -50,13 +50,13 @@ dev = [
 ]
 
 docs = [
-"sphinx",
-"sphinx-rtd-theme",
-"myst-parser",
-"pyyaml",
-"cmake-format",
-"breathe",
-"exhale"
+  "sphinx",
+  "sphinx-rtd-theme",
+  "myst-parser",
+  "pyyaml",
+  "cmake-format",
+  "breathe",
+  "exhale"
 ]
 
 [tool.black]
