@@ -21,6 +21,8 @@ QNAPS NAS) and automate your personal storage tasks.
 **__Other solutions (on pyPI) did not fit my needs and/or were not actively maintained__**
  <a href="https://jonasheinle.de" target="_blank"></a>.</h4>
 
+For the official docs follow this [link](https://webdavclient.jonasheinle.de/).
+
 <!-- [![Linux build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml)
 [![Windows build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml)
 -->
