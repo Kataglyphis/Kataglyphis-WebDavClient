@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🚚 Get latest code
-        uses: actions/checkout@v4.2.0
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5.3.0
+        uses: actions/checkout@v5.0.0
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5.6.0
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       # You can test your matrix by printing the current Python version
       - name: Setup python env
         run: |
@@ -29,13 +29,13 @@ jobs:
           pytest --cov=webdavclient --cov-report=xml --cov-report=term-missing
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4.4.3
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: coverage-report
           path: coverage.xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5.0.2
+        uses: codecov/codecov-action@v5.5.0
         with:
           # If your repository is public, you can omit the token
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -46,7 +46,7 @@ jobs:
           cd docs
           make html
       - name: 📂 Sync files to domain
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.SERVER }}
           username: ${{ secrets.USERNAME }}
