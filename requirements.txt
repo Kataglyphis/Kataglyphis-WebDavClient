@@ -1,5 +1,0 @@
-requests
-loguru
--r requirements/dev.txt
--r requirements/docs.txt
--r requirements/test.txt

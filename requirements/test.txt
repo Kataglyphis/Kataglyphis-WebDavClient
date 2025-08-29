@@ -1,6 +1,0 @@
-wsgidav
-cheroot
-pytest
-pytest-benchmark
-pytest-cov
-line_profiler
