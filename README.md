@@ -26,11 +26,13 @@ For the official docs follow this [link](https://webdavclient.jonasheinle.de/).
 <!-- [![Linux build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml)
 [![Windows build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml)
 -->
+[![Automatic Dependency Submission](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/dependency-graph/auto-submission/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/dependency-graph/auto-submission)
+[![Test WebDavClient + Deploy web page](https://github.com/Kataglyphis/WebDavClient/actions/workflows/pages.yml/badge.svg)](https://github.com/Kataglyphis/WebDavClient/actions/workflows/pages.yml)
+[![Codecov Coverage](https://codecov.io/gh/Kataglyphis/WebDavClient/branch/main/graph/badge.svg)](https://codecov.io/gh/Kataglyphis/WebDavClient)
+[![CodeQL](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/github-code-scanning/codeql)
 [![TopLang](https://img.shields.io/github/languages/top/Kataglyphis/WebDavClient)]()
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/paypalme/JonasHeinle)
 [![Twitter](https://img.shields.io/twitter/follow/Cataglyphis_?style=social)](https://twitter.com/Cataglyphis_)
-[![Codecov Coverage](https://codecov.io/gh/Kataglyphis/WebDavClient/branch/main/graph/badge.svg)](https://codecov.io/gh/Kataglyphis/WebDavClient)
-[![Test WebDavClient + Deploy web page](https://github.com/Kataglyphis/WebDavClient/actions/workflows/pages.yml/badge.svg)](https://github.com/Kataglyphis/WebDavClient/actions/workflows/pages.yml)
 [![YouTube](https://img.shields.io/youtube/channel/subscribers/UC3LZiH4sZzzaVBCUV8knYeg?style=social)](https://www.youtube.com/channel/UC3LZiH4sZzzaVBCUV8knYeg)
 
 <p align="center">
