@@ -2,51 +2,61 @@
 requires = ["setuptools>=70.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-py-modules = ["kataglyphis_webdavclient"]
-
 [tool.setuptools.packages.find]
-exclude=["test*","models*","data*","docs*","demo*"]
+where = ["."]
+exclude = ["test*", "data*", "docs*", "demo*", "bench*"]
+
+[tool.setuptools.dynamic]
+version = { file = "VERSION.txt" }
 
 [project]
 name = "kataglyphis_webdavclient"
-version = "0.0.1"
+dynamic = ["version"]
 authors = [
   { name="Jonas Heinle", email="contact@jonasheinle.de" },
 ]
 license = {file = "LICENSE"}
 description = "This package contains modules to easily communicate to a host via WebDav."
 readme = "README.md"
-dependencies = [
-    "requests",
-    "loguru",
-]
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 keywords=["webdav", "cloud"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.14t",
 ]
 
-[project.urls]
-Homepage = "https://webdavclient.jonas.heinle.de"
-Source = "https://github.com/Kataglyphis/Kataglyphis-WebDavClient"
+dependencies = [
+    "requests",
+    "loguru",
+    "cython"
+]
 
 [project.optional-dependencies]
 tests = [
     "pytest",
-    "pytest-benchmark",
+    "pre-commit",
+    "line_profiler",    # line-by-line profiling
+    "pytest-benchmark", # benchmark tests
+    "memory-profiler",  # memory profiling
+    "py-spy",           # profiling
     "pytest-cov",
-    "line_profiler",
+    "pytest-md-report",
+    "pytest-md",
+    "pytest-html",
+    "codespell",
+    "mypy",             # type checking
+    "bandit",           # find security vulnerabilities
+    "vulture",          # find dead code
+    "ruff",             # replacement for flake8
+    "ty",               # type checking
     "wsgidav",
     "cheroot",
-    "black",
-    "flake8",
-    "mypy",
-    "pylint",
-    "isort",
-    "pre-commit"
 ]
 
 docs = [
@@ -58,6 +68,10 @@ docs = [
   "breathe",
   "exhale"
 ]
+
+[project.urls]
+Homepage = "https://webdavclient.jonas.heinle.de"
+Source = "https://github.com/Kataglyphis/Kataglyphis-WebDavClient"
 
 [tool.black]
 line-length = 88
