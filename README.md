@@ -26,8 +26,10 @@ For the official docs follow this [link](https://webdavclient.jonasheinle.de/).
 <!-- [![Linux build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml)
 [![Windows build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml)
 -->
+[![Ubuntu 24.04 Workflow](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/ubuntu-24.04.yml/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-PythonProjectTemplate/actions/workflows/ubuntu-24.04.yml)
+[![Windows 2025 Workflow](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/windows-2025.yml/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-PythonProjectTemplate/actions/workflows/windows-2025.yml)
+[![Ubuntu 24.04 ARM Workflow](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/ubuntu-24.04-arm.yml/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-PythonProjectTemplate/actions/workflows/ubuntu-24.04-arm.yml)
 [![Automatic Dependency Submission](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/dependency-graph/auto-submission/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/dependency-graph/auto-submission)
-[![Test WebDavClient + Deploy web page](https://github.com/Kataglyphis/WebDavClient/actions/workflows/pages.yml/badge.svg)](https://github.com/Kataglyphis/WebDavClient/actions/workflows/pages.yml)
 [![Codecov Coverage](https://codecov.io/gh/Kataglyphis/WebDavClient/branch/main/graph/badge.svg)](https://codecov.io/gh/Kataglyphis/WebDavClient)
 [![CodeQL](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/github-code-scanning/codeql)
 [![TopLang](https://img.shields.io/github/languages/top/Kataglyphis/WebDavClient)]()
