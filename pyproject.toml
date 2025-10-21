@@ -34,7 +34,8 @@ classifiers = [
 dependencies = [
     "requests",
     "loguru",
-    "cython"
+    "cython",
+    "numpy"
 ]
 
 [project.optional-dependencies]
