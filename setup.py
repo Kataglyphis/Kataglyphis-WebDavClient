@@ -208,9 +208,9 @@ class ClangBuildExt(build_ext):
             if hasattr(self.compiler, "cc"):
                 self.compiler.cc = "clang-cl"
             if hasattr(self.compiler, "linker_so"):
-                self.compiler.linker_so = "clang-cl"
+                self.compiler.linker_so = "lld-link"
             if hasattr(self.compiler, "linker"):
-                self.compiler.linker = "clang-cl"
+                self.compiler.linker = "lld-link"
 
         super().build_extension(ext)
 
