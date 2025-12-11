@@ -1,25 +1,15 @@
-<h1 align="center">
-  <br>
-  <a href="https://jonasheinle.de"><img src="images/logo.png" alt="logo" width="200"></a>
-  <br>
-  WebDav client
-  <br>
-</h1>
+<div align="center">
+  <a href="https://jonasheinle.de">
+    <img src="images/logo.png" alt="logo" width="200" />
+  </a>
 
-<!-- <h1 align="center">
-  <br>
-  <a href="https://jonasheinle.de"><img src="images/vulkan-logo.png" alt="VulkanEngine" width="200"></a>
-  <a href="https://jonasheinle.de"><img src="images/Engine_logo.png" alt="VulkanEngine" width="200"></a>
-  <a href="https://jonasheinle.de"><img src="images/glm_logo.png" alt="VulkanEngine" width="200"></a>
-</h1> -->
+  <h1>Kataglyphis-WebDavClient 🚀</h1>
 
-<h4 align="center">Download files via webdav easily. Use it to communicate to cloud storage provider (e.g. Nextcloud, ownCloud, Magenta, Synology NAS,
-QNAPS NAS) and automate your personal storage tasks.  
-
-</br>
+  <h4>Download files via webdav easily. Use it to communicate to cloud storage provider (e.g. Nextcloud, ownCloud, Magenta, Synology NAS,
+QNAPS NAS) and automate your personal storage tasks.  </h4>
+</div>
 
 **__Other solutions (on pyPI) did not fit my needs and/or were not actively maintained__**
- <a href="https://jonasheinle.de" target="_blank"></a>.</h4>
 
 For the official docs follow this [link](https://webdavclient.jonasheinle.de/).
 
@@ -37,59 +27,26 @@ For the official docs follow this [link](https://webdavclient.jonasheinle.de/).
 [![Twitter](https://img.shields.io/twitter/follow/Cataglyphis_?style=social)](https://twitter.com/Cataglyphis_)
 [![YouTube](https://img.shields.io/youtube/channel/subscribers/UC3LZiH4sZzzaVBCUV8knYeg?style=social)](https://www.youtube.com/channel/UC3LZiH4sZzzaVBCUV8knYeg)
 
-<p align="center">
-  <a href="#about-the-project">About The Project</a> •
-  <a href="#getting-started">Getting Started</a> •
-  <a href="#license">License</a> •
-  <a href="#literature">Literature</a>
-</p>
-
 <!-- TABLE OF CONTENTS -->
-<details open="open">
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#key-features">Key Features</a></li>
-      </ul>
-      <ul>
-        <li><a href="#dependencies">Dependencies</a></li>
-      </ul>
-      <ul>
-        <li><a href="#useful-tools">Useful tools</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#tests">Tests</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgements">Acknowledgements</a></li>
-    <li><a href="#literature">Literature</a></li>
-  </ol>
-</details>
+## Table of Contents
 
-<!-- ABOUT THE PROJECT -->
+- [About The Project](#about-the-project)
+  - [Key Features](#key-features)
+  - [Dependencies](#dependencies)
+  - [Useful tools](#useful-tools)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Tests](#tests)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
+- [Acknowledgements](#acknowledgements)
+- [Literature](#literature)
+
+
 ## About The Project
-
-<!-- <h1 align="center">
-  <br>
-  <a href="https://jonasheinle.de"><img src="images/Screenshot1.png" alt="VulkanEngine" width="400"></a>
-  <a href="https://jonasheinle.de"><img src="images/Screenshot2.png" alt="VulkanEngine" width="400"></a>
-  <a href="https://jonasheinle.de"><img src="images/Screenshot3.png" alt="VulkanEngine" width="700"></a>
-</h1> -->
-
-<!-- [![Kataglyphis Engine][product-screenshot1]](https://jonasheinle.de)
-[![Kataglyphis Engine][product-screenshot2]](https://jonasheinle.de)
-[![Kataglyphis Engine][product-screenshot3]](https://jonasheinle.de) -->
 
 This module provides an easy interface for communication via WebDav protocol
 to a remote host (f.e. you can automate downloads from your cloud).
