@@ -1,14 +1,22 @@
+"""Build configuration for packaging and optional Cython compilation."""
+
+import base64
+import hashlib
+import logging
 import os
+import shutil
 import sys
+import tempfile
+import zipfile
+from collections.abc import Sequence
 from pathlib import Path
-from setuptools import setup, Extension
+
+from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
-import zipfile
-import hashlib
-import base64
-import tempfile
-import shutil
+
+LOGGER = logging.getLogger(__name__)
+
 
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
@@ -35,8 +43,8 @@ else:
 
 
 class StripWheel(_bdist_wheel if _bdist_wheel is not None else object):
-    """
-    Build the wheel then rewrite it to exclude source files (.py, .pyc, .c, etc.)
+    """Build the wheel, then rewrite it to exclude source files (.py, .pyc, .c, etc.).
+
     and rebuild the .dist-info/RECORD so the wheel remains valid.
 
     - Use ZipInfo objects and preserve file metadata where possible.
@@ -48,28 +56,29 @@ class StripWheel(_bdist_wheel if _bdist_wheel is not None else object):
 
     exclude_suffixes = (".py", ".pyc", ".pyo", ".c", ".h", ".pxd", ".pyi")
 
-    def run(self):
+    def run(self) -> None:
+        """Build wheel artifacts and strip source files from resulting wheels."""
         # Run the normal wheel build if available
         if _bdist_wheel is not None:
             super().run()
         else:
             # fallback: let setuptools create dist/ wheel via other commands
-            raise RuntimeError(
-                "wheel bdist_wheel not available; install 'wheel' package"
-            )
+            error_message = "wheel bdist_wheel not available; install 'wheel' package"
+            raise RuntimeError(error_message)
 
-        dist_dir = getattr(self, "dist_dir", "dist")
+        dist_dir = Path(getattr(self, "dist_dir", "dist"))
         # find the newly created wheel(s)
-        for fname in os.listdir(dist_dir):
-            if not fname.endswith(".whl"):
+        for wheel_path in dist_dir.iterdir():
+            if wheel_path.suffix != ".whl":
                 continue
-            path = os.path.join(dist_dir, fname)
-            self._strip_wheel(path)
+            self._strip_wheel(wheel_path)
 
-    def _strip_wheel(self, wheel_path):
-        dirname = os.path.dirname(wheel_path) or "."
+    def _strip_wheel(self, wheel_path: Path | str) -> None:
+        wheel_path = Path(wheel_path)
+        dirname = wheel_path.parent
         tmpfd, tmpname = tempfile.mkstemp(suffix=".whl", dir=dirname)
         os.close(tmpfd)
+        tmp_path = Path(tmpname)
 
         try:
             with zipfile.ZipFile(wheel_path, "r") as zin:
@@ -95,11 +104,11 @@ class StripWheel(_bdist_wheel if _bdist_wheel is not None else object):
                         None,
                     )
                     if dist_info_dir is None:
-                        raise RuntimeError(
+                        error_message = (
                             "Could not locate .dist-info directory inside wheel"
                         )
-                    else:
-                        dist_info_record = dist_info_dir + "RECORD"
+                        raise RuntimeError(error_message)
+                    dist_info_record = dist_info_dir + "RECORD"
                 else:
                     dist_info_dir = dist_info_record.rsplit("/", 1)[0] + "/"
 
@@ -138,7 +147,6 @@ class StripWheel(_bdist_wheel if _bdist_wheel is not None else object):
                     # copy date_time and external_attr to preserve timestamps and permissions
                     new_zi.date_time = zi.date_time
                     new_zi.external_attr = zi.external_attr
-                    new_zi.compress_type = zipfile.ZIP_DEFLATED
 
                     # write entry
                     zout.writestr(new_zi, data)
@@ -152,7 +160,7 @@ class StripWheel(_bdist_wheel if _bdist_wheel is not None else object):
                 # Add the new RECORD file with entries computed above.
                 # RECORD itself has an empty hash and size.
                 record_content = "\n".join(
-                    record_lines + [f"{dist_info_dir}RECORD,,"]
+                    [*record_lines, f"{dist_info_dir}RECORD,,"]
                 ).encode("utf-8")
 
                 # create ZipInfo for RECORD and set reasonable permissions
@@ -164,42 +172,35 @@ class StripWheel(_bdist_wheel if _bdist_wheel is not None else object):
 
             # replace original wheel with the stripped one
             shutil.move(tmpname, wheel_path)
-            print(f"Stripped wheel written: {wheel_path}")
+            LOGGER.info("Stripped wheel written: %s", wheel_path)
         finally:
             # cleanup tmp file if it still exists
-            try:
-                if os.path.exists(tmpname):
-                    os.remove(tmpname)
-            except Exception:
-                pass
+            if tmp_path.exists():
+                tmp_path.unlink()
 
 
 class ClangBuildExt(build_ext):
     """Under windows i bend the compiler to be clang-cl!!!
+
     Open source >>> closed source
     """
 
-    def build_extension(self, ext):
+    def build_extension(self, ext: Extension) -> None:
+        """Build one extension and map MSVC toolchain calls to LLVM binaries."""
         if self.compiler.compiler_type == "msvc":
             original_spawn = self.compiler.spawn
 
-            def clang_spawn(cmd):
-                print("I am in clang_spawn")
+            def clang_spawn(cmd: Sequence[str]) -> object:
                 if not cmd:
                     return original_spawn(cmd)
 
-                print(cmd[0])
                 exe = cmd[0].strip('"')  # remove surrounding quotes if any
-                name = os.path.basename(exe).lower()
+                name = Path(exe).name.lower()
 
                 if name in {"cl.exe", "cl"}:
-                    print("cmd[0] recognized as cl")
                     cmd[0] = "clang-cl"
-                    print(f"Using clang-cl compiler: {' '.join(cmd)}")
                 elif name in {"link.exe", "link"}:
-                    print("cmd[0] recognized as link")
                     cmd[0] = "lld-link.exe"
-                    print(f"Using lld-link linker: {' '.join(cmd)}")
 
                 return original_spawn(cmd)
 
@@ -219,13 +220,9 @@ package_dir = "kataglyphis_webdavclient"
 version = Path("VERSION.txt").read_text().strip()
 
 
-def list_py_files(package_dir):
-    py_files = []
-    for root, dirs, files in os.walk(package_dir):
-        for file in files:
-            if file.endswith(".py"):
-                py_files.append(os.path.join(root, file))
-    return py_files
+def list_py_files(package_dir: str) -> list[str]:
+    """Return all Python module file paths under the package directory."""
+    return [str(path) for path in Path(package_dir).rglob("*.py")]
 
 
 py_files = list_py_files(package_dir)

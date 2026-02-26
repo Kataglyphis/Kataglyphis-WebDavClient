@@ -1,5 +1,4 @@
-"""
-Module to set up and run a WebDAV server using Cheroot WSGI server and WsgiDAVApp.
+"""Module to set up and run a WebDAV server using Cheroot WSGI server and WsgiDAVApp.
 
 The server is configured to serve files from the 'tests/remote' directory and listens on port 8081.
 Logging is enabled, and directory browsing is allowed.
@@ -8,24 +7,23 @@ Serves as starting point for unit test my application :smile:
 
 """
 
+from pathlib import Path
+
 from cheroot import wsgi
-from wsgidav.wsgidav_app import WsgiDAVApp
-
 from loguru import logger
-
-import os
+from wsgidav.wsgidav_app import WsgiDAVApp
 
 
 def create_web_dav_server() -> None:
-
-    current_path = os.getcwd()
+    """Create and run the local WebDAV server used by integration tests."""
+    current_path = Path.cwd()
     folder_name = "webdav_root"
-    cheroot_root_path = os.path.join(current_path, folder_name)
+    cheroot_root_path = current_path / folder_name
     logger.info("Cheroot root path is:", cheroot_root_path)
 
     # https://wsgidav.readthedocs.io/en/latest/user_guide_configure.html
     config = {
-        "host": "0.0.0.0",
+        "host": "127.0.0.1",
         "port": 8081,
         "provider_mapping": {"/": "tests/remote"},
         "verbose": 2,

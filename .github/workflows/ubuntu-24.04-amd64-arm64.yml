@@ -1,0 +1,146 @@
+﻿name: Build + test + run on Linux natively - x86-64/arm64
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    env:
+      PACKAGE_NAME: kataglyphis_webdavclient
+    strategy:
+      matrix:
+        include:
+          - runs_on: ubuntu-24.04
+            arch: x64
+            platform: linux/amd64
+          - runs_on: ubuntu-24.04-arm
+            arch: arm64
+            platform: linux/arm64
+
+    runs-on: ${{ matrix.runs_on }}
+
+    steps:
+      - name: Free Disk Space on Host
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: Prune Docker + show disk usage
+        run: |
+          set -eux
+          docker system prune -af --volumes || true
+          docker system df || true
+          df -h
+
+      - uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 1
+          submodules: recursive
+
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u Kataglyphis --password-stdin
+
+      - name: Pull container image
+        run: |
+          for i in 1 2 3; do
+            echo "Attempt $i to pull container..."
+            if timeout 900 docker pull ghcr.io/kataglyphis/kataglyphis_beschleuniger:latest; then
+              echo "Successfully pulled container"
+              docker system df || true
+              exit 0
+            fi
+            echo "Pull failed, waiting before retry..."
+            sleep 30
+          done
+          echo "Failed to pull container after 3 attempts"
+          exit 1
+
+      - name: Python static analysis
+        run: |
+          docker run --rm \
+            --platform ${{ matrix.platform }} \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            ghcr.io/kataglyphis/kataglyphis_beschleuniger:latest \
+            bash -lc "bash scripts/linux/ci_static_analysis.sh '${{ matrix.arch }}'"
+
+      - name: Run Python tests
+        run: |
+          docker run --rm \
+            --platform ${{ matrix.platform }} \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            ghcr.io/kataglyphis/kataglyphis_beschleuniger:latest \
+            bash -lc "bash scripts/linux/ci_tests.sh '${{ env.PACKAGE_NAME }}' '3.14 3.14t'"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v6.0.0
+        with:
+          name: test-reports-${{ matrix.runs_on }}
+          path: docs/test_results/
+
+      - name: Build Docs
+        if: ${{ matrix.arch == 'x64' }}
+        run: |
+          docker run --rm \
+            --platform ${{ matrix.platform }} \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            ghcr.io/kataglyphis/kataglyphis_beschleuniger:latest \
+            bash -lc "bash scripts/linux/ci_build_docs.sh 3.13"
+
+      - name: Fix permissions for doc directory
+        if: ${{ matrix.arch == 'x64' }}
+        run: |
+          chmod -R 755 ./docs/build/html/
+          ls -la ./docs/build/html/
+
+      - name: ðŸ“‚ Sync files to domain
+        if: ${{ matrix.arch == 'x64' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.SERVER }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          local-dir: "./docs/build/html/"
+
+      - name: Packaging application
+        run: |
+          docker run --rm \
+            --platform ${{ matrix.platform }} \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            ghcr.io/kataglyphis/kataglyphis_beschleuniger:latest \
+            bash -lc "bash scripts/linux/ci_packaging.sh"
+      
+      - name: Fix permissions for dist directory
+        run: |
+          sudo chown -R $USER:$USER ${{ github.workspace }}/dist
+          sudo chmod -R 755 ${{ github.workspace }}/dist
+          ls -la ${{ github.workspace }}/dist/
+
+      - name: Verify dist directory
+        run: |
+          echo "Checking for wheel files:"
+          ls -la ${{ github.workspace }}/dist/
+          find ${{ github.workspace }}/dist/ -name "*.whl"
+
+
+      - name: Upload packages (source/binary only)
+        if: always()
+        uses: actions/upload-artifact@v6.0.0
+        with:
+          name: packages-linux-${{ matrix.runs_on }}-source-and-binary
+          path: ${{ github.workspace }}/dist/
+          if-no-files-found: error
+

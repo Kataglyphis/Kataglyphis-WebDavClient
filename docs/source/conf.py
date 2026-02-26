@@ -1,20 +1,19 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+"""Sphinx configuration for Kataglyphis-WebDavClient documentation."""
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath("../../"))
+
+sys.path.insert(0, str(Path("../../").resolve()))
 
 project = "Kataglyphis-WebDavClient"
-copyright = "2024, Jonas Heinle"
+project_copyright = "2024, Jonas Heinle"
 author = "Jonas Heinle"
 release = "0.0.1"
+globals()["copyright"] = project_copyright
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -51,10 +50,10 @@ exclude_patterns = []
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {
     "style_nav_header_background": "#6af0ad",
-    "palette": "dark",  # Set dark mode as default
-    "fixed_sidebar": True,
 }
 html_static_path = ["_static"]
+
+myst_heading_anchors = 3
 
 # Enable the processing of Markdown files
 source_suffix = {
@@ -64,3 +63,19 @@ source_suffix = {
 
 # Here we assume that the file is at _static/css/custom.css
 html_css_files = ["css/custom.css"]
+
+_SPHINX_EXPORTS = (
+    project,
+    project_copyright,
+    author,
+    release,
+    myst_enable_extensions,
+    exhale_args,
+    templates_path,
+    exclude_patterns,
+    html_theme,
+    html_theme_options,
+    html_static_path,
+    source_suffix,
+    html_css_files,
+)

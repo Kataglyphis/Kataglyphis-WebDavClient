@@ -10,6 +10,12 @@ __pycache__/
 # C extensions
 *.so
 
+docs/test_results
+
+kataglyphis_webdavclient/**/*.c
+
+*/**/.log
+
 # Distribution / packaging
 .Python
 build/

@@ -40,6 +40,7 @@ dependencies = [
 
 [project.optional-dependencies]
 tests = [
+    "atheris",          # fuzz testing
     "pytest",
     "pre-commit",
     "line_profiler",    # line-by-line profiling
@@ -51,7 +52,6 @@ tests = [
     "pytest-md",
     "pytest-html",
     "codespell",
-    "mypy",             # type checking
     "bandit",           # find security vulnerabilities
     "vulture",          # find dead code
     "ruff",             # replacement for flake8
@@ -166,7 +166,7 @@ docstring-code-format = true
 python-version = "3.13"
 
 [tool.ty.src]
-include = ["kataglyphispythonpackage", "scripts/"]
+include = ["kataglyphis_webdavclient", "scripts/"]
 exclude = [
     "**/__pycache__",
     "*.tmp",

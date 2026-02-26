@@ -1,15 +1,27 @@
-import os
-from loguru import logger
+"""WebDAV client implementation for listing and downloading remote files."""
+
 import urllib.parse
-from xml.etree import ElementTree
+from pathlib import Path, PurePosixPath
+
 import requests
+from defusedxml import ElementTree
+from loguru import logger
 from requests.auth import HTTPBasicAuth
 
 
+REQUEST_TIMEOUT_SECONDS = 30
+
+
+def _join_remote_url(*parts: str) -> str:
+    cleaned_parts = [part.strip("/") for part in parts if part]
+    return "/".join(cleaned_parts)
+
+
 class WebDavClient:
-    """
-    A simple WebDav client for downloading files and complete folder
-    hierarchies from a remote host (f.e. cloud provider).
+    """A simple WebDav client for downloading files and folders.
+
+    It supports listing folders, listing files, and iterative downloads from
+    a remote host (for example a cloud provider).
 
     Attributes:
         hostname (str)        : full address to webdav host
@@ -17,13 +29,12 @@ class WebDavClient:
         password (str)        : most properly a token generated for AUTH
 
     Methods:
-        download_all_files_iterative(a,b): Downloads all files from a and stroes
-                                           them under b locally.
-        subtract(a, b): Returns the difference between a and b.
+        download_all_files_iterative(a,b): Downloads all files from a and stores
+            them under b locally.
     """
 
     def __init__(self, hostname: str, username: str, password: str) -> None:
-
+        """Initialize a client with credentials and logging output folder."""
         self.hostname: str = hostname
         self.username: str = username
         self.password: str = password
@@ -36,9 +47,7 @@ class WebDavClient:
         logger.add("logs/downloadMd_s.log", rotation="500 MB")
 
     def list_files(self, url: str) -> list[str]:
-        """
-        This method list all files from your WebDav host that stay under the
-        url
+        """List all files directly below a given WebDAV URL.
 
         Args:
             url (str) : web dev host url.
@@ -59,19 +68,26 @@ class WebDavClient:
             >>> remote_base_path = "MyProjectFolder"
             >>> auth: HTTPBasicAuth = HTTPBasicAuth(username, password)
             >>> webdevclient = WebDavClient(hostname, username, password)
-            >>> files = webdevclient.list_files(os.path.join(hostname, remote_base_path))
+            >>> files = webdevclient.list_files(
+            ...     os.path.join(hostname, remote_base_path)
+            ... )
 
         """
         headers: dict[str, str] = {"Content-Type": "application/xml", "Depth": "1"}
         response: requests.Response = requests.request(
-            "PROPFIND", url, auth=self.auth, headers=headers
+            "PROPFIND",
+            url,
+            auth=self.auth,
+            headers=headers,
+            timeout=REQUEST_TIMEOUT_SECONDS,
         )
         if response.status_code != 207:
             error_message: str = "Failed to list directory contents via requests: "
             logger.error(
                 "Error message {} with code {}", error_message, response.status_code
             )
-            raise OSError(f"{error_message}{response.status_code}")
+            error_details = f"{error_message}{response.status_code}"
+            raise OSError(error_details)
 
         tree = ElementTree.fromstring(response.content)
         files = []
@@ -83,7 +99,8 @@ class WebDavClient:
         return files
 
     def list_folders(self, remote_base_path: str) -> list[str]:
-        """
+        """List all folders directly below a remote base path.
+
         This method list all folders from your WebDav host that stay EXACTLY
         under the remote_base_path. No subfolders are considered.
 
@@ -110,24 +127,29 @@ class WebDavClient:
 
         """
         headers = {"Content-Type": "application/xml", "Depth": "1"}
-        url: str = os.path.join(self.hostname, remote_base_path)
-        # as we communicate we do not want WINDWOS \ as os.sep!
-        url = url.replace(os.sep, "/")
-        response = requests.request("PROPFIND", url, auth=self.auth, headers=headers)
+        url: str = _join_remote_url(self.hostname, remote_base_path)
+        response = requests.request(
+            "PROPFIND",
+            url,
+            auth=self.auth,
+            headers=headers,
+            timeout=REQUEST_TIMEOUT_SECONDS,
+        )
         if response.status_code != 207:
             error_message = "Failed to list directory contents: "
             logger.error("{} {}", error_message, response.status_code)
-            raise OSError(f"{error_message}{response.status_code}")
+            error_details = f"{error_message}{response.status_code}"
+            raise OSError(error_details)
 
         tree = ElementTree.fromstring(response.content)
         folders = []
         for response in tree.findall("{DAV:}response"):
             href = response.find("{DAV:}href").text
-            folder = os.path.basename(os.path.normpath(href))
+            folder = PurePosixPath(href.rstrip("/")).name
             is_folder = href.endswith("/")
             is_not_remote_base_path = (
                 href != url + "/"
-            ) and folder != remote_base_path.split("/")[-1]
+            ) and folder != remote_base_path.rsplit("/", maxsplit=1)[-1]
             is_hidden_folder = folder.startswith(".")
             if is_folder and is_not_remote_base_path and not is_hidden_folder:
                 logger.debug(
@@ -139,8 +161,8 @@ class WebDavClient:
         return folders
 
     def filter_after_global_base_path(self, path: str, remote_base_path: str) -> str:
-        """
-        This method removes the hostname and the remote_base_path from an path
+        """Remove hostname and base path prefix from a remote URL path.
+
         Args:
             path (str)  : Url to host, e.g. https://host.org
             remote_base_path (str): single folder on remote host e.g. data
@@ -155,7 +177,7 @@ class WebDavClient:
                  remote_base_path = data
                  path = https://host.org/data/example1
 
-                 "example1" ist returned
+                 "example1" is returned
         """
         search_str = "/" + remote_base_path + "/"
         if search_str in path:
@@ -177,8 +199,7 @@ class WebDavClient:
         return path
 
     def ensure_folder_exists(self, path: str) -> None:
-        """
-        This method ensures that the given folder will exist
+        """Ensure that the given folder exists.
 
         Args:
             path (str)  : Path to folder.
@@ -190,15 +211,15 @@ class WebDavClient:
             None directly
 
         """
-        if not os.path.exists(path):
-            os.makedirs(path)
+        folder_path = Path(path)
+        if not folder_path.exists():
+            folder_path.mkdir(parents=True, exist_ok=True)
             logger.debug("Folder created: {}", path)
         else:
             logger.debug("Folder already exists: {}", path)
 
     def get_sub_path(self, full_path: str, initial_part: str) -> str:
-        """
-        Returns the sub-path after the initial part of the path.
+        """Returns the sub-path after the initial part of the path.
 
         Args:
             full_path (str): The full path string. Does NOT have host url within
@@ -234,7 +255,8 @@ class WebDavClient:
             logger.error(
                 "The {} string is not in the full_path={}", initial_part, full_path
             )
-            raise ValueError("The full path does not contain the initial part.")
+            error_details = "The full path does not contain the initial part."
+            raise ValueError(error_details)
 
         # Handle the edge case where the full path is exactly the initial part
         decoded_initial_part = "/" + decoded_initial_part
@@ -248,16 +270,15 @@ class WebDavClient:
                 "The get_sub_path() method returns {}", full_path[len(initial_part) :]
             )
             return full_path[len(initial_part) :]
-        else:
-            # Calculate the start index of the sub-path
-            sub_path_start_idx = start_idx + len(decoded_initial_part) - 1
+        # Calculate the start index of the sub-path
+        sub_path_start_idx = start_idx + len(decoded_initial_part) - 1
 
-            # Extract the sub-path
-            sub_path = decoded_full_path[sub_path_start_idx:]
+        # Extract the sub-path
+        sub_path = decoded_full_path[sub_path_start_idx:]
 
-            logger.debug("The get_sub_path() method returns {}", sub_path)
+        logger.debug("The get_sub_path() method returns {}", sub_path)
 
-            return sub_path
+        return sub_path
 
     def download_files(
         self,
@@ -265,11 +286,13 @@ class WebDavClient:
         remote_base_path: str,
         local_base_path: str,
     ) -> None:
-        """
+        """Download all files directly below a remote base path.
+
         This method downloads all files from your WebDav host that stay EXACTLY
         under the remote_base_path. No subfolders are considered.
 
         Args:
+            global_remote_base_path (str): Root folder that anchors relative paths.
             remote_base_path (str): Folder on host which should be primary source
                                     for downloading files
             local_base_path (str) : all files (with preserved folder structures)
@@ -293,12 +316,10 @@ class WebDavClient:
             >>> download_files(hostname, auth, current_remote_path, local_base_path)
 
         """
-        if not os.path.exists(local_base_path):
+        if not Path(local_base_path).exists():
             logger.info("Dir {} will be created", local_base_path)
-            os.makedirs(local_base_path)
-        url = os.path.join(self.hostname, remote_base_path)
-        # as we communicate we do not want WINDWOS \ as os.sep!
-        url = url.replace(os.sep, "/")
+            Path(local_base_path).mkdir(parents=True, exist_ok=True)
+        url = _join_remote_url(self.hostname, remote_base_path)
         files_on_host = self.list_files(url)
 
         if len(files_on_host) == 0:
@@ -311,10 +332,11 @@ class WebDavClient:
             # Decoding the URL-encoded string
             decoded_filename = urllib.parse.unquote(file_name)
             logger.info("The decoded filename version is: {}", decoded_filename)
-            remote_file_url = os.path.join(
-                self.hostname, remote_base_path, file_name  # file_path.split("/")[-1]
+            remote_file_url = _join_remote_url(
+                self.hostname,
+                remote_base_path,
+                file_name,  # file_path.split("/")[-1]
             )
-            remote_file_url = remote_file_url.replace(os.sep, "/")
             logger.info("The remote file url is: {}", remote_file_url)
             sub_path = self.get_sub_path(file_path, global_remote_base_path)
 
@@ -325,18 +347,21 @@ class WebDavClient:
                 sub_path = ""
 
             logger.debug("The current sub path is: {}", sub_path)
-            local_file_path = os.path.join(local_base_path, sub_path, decoded_filename)
-            local_file_path = local_file_path.replace(os.sep, "/")
+            local_file_path = Path(local_base_path) / sub_path / decoded_filename
             logger.debug(
                 "The current file that is stored has the full path: {}", local_file_path
             )
-            response = requests.get(remote_file_url, auth=self.auth, stream=True)
+            response = requests.get(
+                remote_file_url,
+                auth=self.auth,
+                stream=True,
+                timeout=REQUEST_TIMEOUT_SECONDS,
+            )
             if response.status_code == 200:
-                folder_path = os.path.dirname(local_file_path)
-                self.ensure_folder_exists(folder_path)
-                with open(local_file_path, "wb") as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
+                folder_path = local_file_path.parent
+                self.ensure_folder_exists(str(folder_path))
+                with local_file_path.open("wb") as f:
+                    f.writelines(response.iter_content(chunk_size=8192))
             else:
                 logger.debug(
                     "Failed to download {}: {}", remote_file_url, response.status_code
@@ -347,10 +372,11 @@ class WebDavClient:
         remote_base_path: str,
         local_base_path: str,
     ) -> None:
-        """
+        """Download all files recursively below a remote base path.
+
         This method downloads all files from your WebDav host that stay
         under the remote_base_path. All subfolders will also be downloaded
-        and folder structure is preserved
+        and folder structure is preserved.
 
         Args:
             remote_base_path (str): Folder on host which should be primary source
@@ -407,6 +433,7 @@ class WebDavClient:
                     folder,
                     current_remote_path,
                 )
-                relative_folder_path: str = os.path.join(current_remote_path, folder)
-                relative_folder_path = relative_folder_path.replace(os.sep, "/")
+                relative_folder_path: str = str(
+                    PurePosixPath(current_remote_path) / folder
+                )
                 stack.append(relative_folder_path)

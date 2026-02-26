@@ -1,173 +1,73 @@
-"""
-Module for testing the WebDavClient using pytest.
+"""Tests for the WebDavClient against a local mock WebDAV server."""
 
-This module contains setup fixtures for starting a mock WebDAV server and cleaning up test files.
-It also includes test functions that validate various functionalities of the WebDavClient.
-
-Functions
----------
-cleanup_test_files()
-    Removes test directories and their contents after tests are completed.
-
-start_webdav_server()
-    Pytest fixture to start and stop the mock WebDAV server for testing.
-
-webdav_client()
-    Pytest fixture that provides an instance of WebDavClient for testing.
-
-test_filter_after_global_base_path(webdav_client)
-    Tests the filter_after_global_base_path method of WebDavClient.
-
-test_list_files(webdav_client)
-    Tests the list_files method of WebDavClient.
-
-test_list_folders(webdav_client)
-    Tests the list_folders method of WebDavClient.
-
-test_get_sub_path(webdav_client)
-    Tests the get_sub_path method of WebDavClient.
-
-test_download_files(webdav_client)
-    Tests downloading files using the download_files method.
-
-test_download_all_files_iterative(webdav_client)
-    Tests downloading all files iteratively using the download_all_files_iterative method.
-"""
-
-import os
 import shutil
-from loguru import logger
-import pytest
-import subprocess
 import time
-import requests
+from collections.abc import Iterator
+from multiprocessing import Process
+from pathlib import Path
+from uuid import uuid4
+
+import pytest
+from loguru import logger
+
 from kataglyphis_webdavclient import WebDavClient
+from tests.mock_webdav_server import create_web_dav_server
 
 
 def cleanup_test_files() -> None:
-    """
-    Remove test directories and their contents.
-
-    This function attempts to remove the 'tests/local_data' and 'tests/local_data2' directories,
-    along with all their contents, to clean up after tests.
-
-    Returns
-    -------
-    None
-    """
+    """Remove local test directories created during download tests."""
     try:
         shutil.rmtree("tests/local_data")
         shutil.rmtree("tests/local_data2")
-        logger.info(
-            "The directory local_data and local_data2 and all its contents have been removed successfully."
-        )
-    except OSError as e:
-        logger.error(f"Error : {e.strerror}")
+        logger.info("Removed local test directories.")
+    except OSError as error:
+        logger.error("Cleanup error: {}", error.strerror)
 
 
 @pytest.fixture(scope="module", autouse=True)
-def start_webdav_server():
-    """
-    Pytest fixture to start and stop the mock WebDAV server.
-
-    This fixture starts the mock WebDAV server before any tests are run and ensures
-    it is properly terminated and cleaned up after tests are completed.
-
-    Yields
-    ------
-    None
-    """
-    # Start the mock WebDav server
-    server_process = subprocess.Popen(["python", "tests/mock_webdav_server.py"])
+def start_webdav_server() -> Iterator[None]:
+    """Start the mock WebDAV server for all tests in this module."""
+    server_process = Process(target=create_web_dav_server, daemon=True)
+    server_process.start()
 
     time.sleep(4)
     yield
 
-    # Terminate the server process after all tests are done
     server_process.terminate()
-    server_process.wait()
-
-    # Cleanup after tests
+    server_process.join(timeout=10)
     cleanup_test_files()
 
 
 @pytest.fixture
 def webdav_client() -> WebDavClient:
-    """
-    Provide a WebDavClient instance for testing.
-
-    Returns
-    -------
-    WebDavClient
-        An instance of WebDavClient configured with test credentials.
-    """
+    """Provide a configured WebDavClient for local integration tests."""
     hostname = "http://localhost:8081"
     username = "testuser"
-    password = "testpassword"
+    password = uuid4().hex
     return WebDavClient(hostname, username, password)
 
 
 def test_filter_after_global_base_path(webdav_client: WebDavClient) -> None:
-    """
-    Test the filter_after_global_base_path method.
-
-    Ensures that the method correctly filters out the global remote base path from the given path.
-
-    Parameters
-    ----------
-    webdav_client : WebDavClient
-        The WebDavClient instance used for testing.
-
-    Returns
-    -------
-    None
-    """
+    """Filter paths relative to the global remote base path."""
     path = "/data/subfolder1/text.txt"
     path2 = "http://localhost:8081/data"
     remote_base_path = "data"
     result = webdav_client.filter_after_global_base_path(path, remote_base_path)
     result2 = webdav_client.filter_after_global_base_path(path2, remote_base_path)
     assert result == "subfolder1/text.txt"
-    # assert result2 ==
+    assert result2 == path2
 
 
 def test_list_files(webdav_client: WebDavClient) -> None:
-    """
-    Test listing files in a remote directory.
-
-    Verifies that the list_files method returns the correct list of files.
-
-    Parameters
-    ----------
-    webdav_client : WebDavClient
-        The WebDavClient instance used for testing.
-
-    Returns
-    -------
-    None
-    """
+    """List files directly in the remote root folder."""
     remote_base_path = "data"
-    url = os.path.join(webdav_client.hostname, remote_base_path)
-    url = url.replace(os.sep, "/")
+    url = f"{webdav_client.hostname.rstrip('/')}/{remote_base_path}"
     files = webdav_client.list_files(url)
     assert "/data/Readme.md" in files
 
 
 def test_list_folders(webdav_client: WebDavClient) -> None:
-    """
-    Test listing folders in a remote directory.
-
-    Verifies that the list_folders method returns the correct list of folders.
-
-    Parameters
-    ----------
-    webdav_client : WebDavClient
-        The WebDavClient instance used for testing.
-
-    Returns
-    -------
-    None
-    """
+    """List direct subfolders below the remote root folder."""
     folders = webdav_client.list_folders("data")
     assert "subfolder1" in folders
     assert "subfolder2" in folders
@@ -175,20 +75,7 @@ def test_list_folders(webdav_client: WebDavClient) -> None:
 
 
 def test_get_sub_path(webdav_client: WebDavClient) -> None:
-    """
-    Test computing the sub-path relative to a base path.
-
-    Ensures that get_sub_path returns the correct sub-path from the full path.
-
-    Parameters
-    ----------
-    webdav_client : WebDavClient
-        The WebDavClient instance used for testing.
-
-    Returns
-    -------
-    None
-    """
+    """Compute a relative sub-path from a full path and base path."""
     full_path = "/data/subfolder1/text.txt"
     initial_part = "data"
     result = webdav_client.get_sub_path(full_path, initial_part)
@@ -196,52 +83,29 @@ def test_get_sub_path(webdav_client: WebDavClient) -> None:
 
 
 def test_download_files(webdav_client: WebDavClient) -> None:
-    """
-    Test downloading files from the remote server.
-
-    Checks if the specified files are correctly downloaded to the local directory.
-
-    Parameters
-    ----------
-    webdav_client : WebDavClient
-        The WebDavClient instance used for testing.
-
-    Returns
-    -------
-    None
-    """
+    """Download files from the current remote folder without recursion."""
     global_remote_base_path = "data"
     remote_base_path = "data"
     local_base_path = "tests/local_data"
 
     webdav_client.download_files(
-        global_remote_base_path, remote_base_path, local_base_path
+        global_remote_base_path,
+        remote_base_path,
+        local_base_path,
     )
-    assert os.path.exists(os.path.join(local_base_path, "Readme.md"))
+    assert (Path(local_base_path) / "Readme.md").exists()
 
 
 def test_download_all_files_iterative(webdav_client: WebDavClient) -> None:
-    """
-    Test recursively downloading all files from the remote server.
-
-    Verifies that all files are downloaded iteratively into the local directory structure.
-
-    Parameters
-    ----------
-    webdav_client : WebDavClient
-        The WebDavClient instance used for testing.
-
-    Returns
-    -------
-    None
-    """
+    """Download files recursively while preserving directory structure."""
     remote_base_path = "data"
     local_base_path = "tests/local_data2"
 
     webdav_client.download_all_files_iterative(remote_base_path, local_base_path)
-    assert os.path.exists(os.path.join(local_base_path, "Readme.md"))
-    assert os.path.exists(os.path.join(local_base_path, "subfolder1/text.txt"))
+    assert (Path(local_base_path) / "Readme.md").exists()
+    assert (Path(local_base_path) / "subfolder1/text.txt").exists()
 
 
 if __name__ == "__main__":
+    _ = start_webdav_server
     pytest.main()
