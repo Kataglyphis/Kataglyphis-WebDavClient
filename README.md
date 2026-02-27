@@ -18,9 +18,8 @@ For the official docs follow this [link](https://webdavclient.jonasheinle.de/).
 <!-- [![Linux build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Linux.yml)
 [![Windows build](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml/badge.svg)](https://github.com/Kataglyphis/GraphicsEngineVulkan/actions/workflows/Windows.yml)
 -->
-[![Ubuntu 24.04 Workflow](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/ubuntu-24.04.yml/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-PythonProjectTemplate/actions/workflows/ubuntu-24.04.yml)
-[![Windows 2025 Workflow](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/windows-2025.yml/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-PythonProjectTemplate/actions/workflows/windows-2025.yml)
-[![Ubuntu 24.04 ARM Workflow](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/ubuntu-24.04-arm.yml/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-PythonProjectTemplate/actions/workflows/ubuntu-24.04-arm.yml)
+[![Build + test + run on Linux natively - x86-64/arm64](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/ubuntu-24.04-amd64-arm64.yml/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/ubuntu-24.04-amd64-arm64.yml)
+[![Windows 2025 Workflow](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/windows-2025.yml/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/windows-2025.yml)
 [![Automatic Dependency Submission](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/dependency-graph/auto-submission/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/dependency-graph/auto-submission)
 [![Codecov Coverage](https://codecov.io/gh/Kataglyphis/WebDavClient/branch/main/graph/badge.svg)](https://codecov.io/gh/Kataglyphis/WebDavClient)
 [![CodeQL](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Kataglyphis/Kataglyphis-WebDavClient/actions/workflows/github-code-scanning/codeql)
