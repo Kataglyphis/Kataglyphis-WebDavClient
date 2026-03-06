@@ -33,7 +33,7 @@ jobs:
         uses: ./.github/actions/cleanup-disk-space
 
       - name: Login to GitHub
-        uses: docker/login-action@v3.7.0
+        uses: docker/login-action@v4.0.0
         with:
           registry: ghcr.io
           username: Kataglyphis
@@ -51,9 +51,13 @@ jobs:
             ghcr.io/kataglyphis/kataglyphis_beschleuniger:winamd64 `
             powershell -NoProfile -ExecutionPolicy Bypass -File "C:\workspace\scripts\windows\Build-Windows.ps1"
 
-      - name: Upload files & Zip
-        uses: actions/upload-artifact@v6.0.0
+      - name: Upload files, logs & Zip
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7.0.0
         with:
           name: python-package-windows-source-and-binaries
+          if-no-files-found: warn
           path: |
             ./dist/
+            ./logs/
+            ./docs/test_results/

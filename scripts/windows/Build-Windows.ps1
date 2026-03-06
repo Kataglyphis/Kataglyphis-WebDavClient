@@ -41,12 +41,60 @@ function Close-Log {
 	Close-BuildLog -Context $script:BuildContext
 }
 
+function Write-ImportantConsoleMessage {
+	param(
+		[Parameter(Mandatory)]
+		[AllowEmptyString()]
+		[string]$Message,
+		[ValidateSet('Info', 'Warning', 'Error', 'Success')]
+		[string]$Level = 'Info'
+	)
+
+	if (-not $Message) {
+		Write-Host ''
+		return
+	}
+
+	switch ($Level) {
+		'Warning' {
+			Write-Warning $Message
+		}
+		'Error' {
+			Write-Host $Message -ForegroundColor Red
+		}
+		'Success' {
+			Write-Host $Message -ForegroundColor Green
+		}
+		default {
+			Write-Host $Message
+		}
+	}
+}
+
+function Test-IsImportantLogMessage {
+	param(
+		[Parameter(Mandatory)]
+		[AllowEmptyString()]
+		[string]$Message
+	)
+
+	if (-not $Message) {
+		return $true
+	}
+
+	return $Message -match '^(===|>>>|<<<|Total:|Repo root:|Logging all output to:|Stop on error:|Unhandled critical error:|Stack trace:|--- Python )'
+}
+
 function Write-Log {
 	param(
 		[Parameter(Mandatory)]
 		[AllowEmptyString()]
 		[string]$Message
 	)
+
+	if (Test-IsImportantLogMessage -Message $Message) {
+		Write-ImportantConsoleMessage -Message $Message
+	}
 
 	Write-BuildLog -Context $script:BuildContext -Message $Message
 }
@@ -58,6 +106,7 @@ function Write-LogWarning {
 		[string]$Message
 	)
 
+	Write-ImportantConsoleMessage -Message $Message -Level Warning
 	Write-BuildLogWarning -Context $script:BuildContext -Message $Message
 }
 
@@ -68,6 +117,7 @@ function Write-LogError {
 		[string]$Message
 	)
 
+	Write-ImportantConsoleMessage -Message $Message -Level Error
 	Write-BuildLogError -Context $script:BuildContext -Message $Message
 }
 
@@ -78,6 +128,7 @@ function Write-LogSuccess {
 		[string]$Message
 	)
 
+	Write-ImportantConsoleMessage -Message $Message -Level Success
 	Write-BuildLogSuccess -Context $script:BuildContext -Message $Message
 }
 
