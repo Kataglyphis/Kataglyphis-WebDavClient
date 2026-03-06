@@ -574,6 +574,7 @@ name = "kataglyphis-webdavclient"
 source = { editable = "." }
 dependencies = [
     { name = "cython" },
+    { name = "defusedxml" },
     { name = "loguru" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -598,7 +599,6 @@ tests = [
     { name = "bandit" },
     { name = "cheroot" },
     { name = "codespell" },
-    { name = "defusedxml" },
     { name = "line-profiler" },
     { name = "memory-profiler" },
     { name = "pre-commit" },
@@ -624,7 +624,7 @@ requires-dist = [
     { name = "cmake-format", marker = "extra == 'docs'" },
     { name = "codespell", marker = "extra == 'tests'" },
     { name = "cython" },
-    { name = "defusedxml", marker = "extra == 'tests'" },
+    { name = "defusedxml" },
     { name = "exhale", marker = "extra == 'docs'" },
     { name = "line-profiler", marker = "extra == 'tests'" },
     { name = "loguru" },
