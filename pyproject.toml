@@ -58,6 +58,7 @@ tests = [
     "ty",               # type checking
     "wsgidav",
     "cheroot",
+    "defusedxml",
 ]
 
 docs = [
