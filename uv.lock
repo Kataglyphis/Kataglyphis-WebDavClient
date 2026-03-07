@@ -595,7 +595,7 @@ docs = [
     { name = "sphinx-rtd-theme" },
 ]
 tests = [
-    { name = "atheris" },
+    { name = "atheris", marker = "sys_platform != 'win32'" },
     { name = "bandit" },
     { name = "cheroot" },
     { name = "codespell" },
@@ -617,7 +617,7 @@ tests = [
 
 [package.metadata]
 requires-dist = [
-    { name = "atheris", marker = "extra == 'tests'" },
+    { name = "atheris", marker = "sys_platform != 'win32' and extra == 'tests'" },
     { name = "bandit", marker = "extra == 'tests'" },
     { name = "breathe", marker = "extra == 'docs'" },
     { name = "cheroot", marker = "extra == 'tests'" },
