@@ -6,9 +6,28 @@
 Kataglyphis-WebDavClient documentation
 ======================================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+.. rst-class:: hero-section
+
+This package contains modules to easily communicate to a host via WebDav.
+
+.. grid:: 2
+   :gutter: 2
+
+   .. grid-item-card:: WebDav Client
+
+      Easily connect to and interact with WebDav servers using Python.
+
+   .. grid-item-card:: Cloud Storage
+
+      Seamlessly upload, download, and manage files on cloud providers.
+
+   .. grid-item-card:: Robust Error Handling
+
+      Built-in retries and logging using Loguru for reliable communication.
+
+   .. grid-item-card:: Fast & Typed
+
+      Optimized with Cython and fully typed for better developer experience.
 
 
 .. toctree::

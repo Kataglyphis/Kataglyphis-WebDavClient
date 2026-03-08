@@ -23,6 +23,7 @@ extensions = [
     "sphinx.ext.napoleon",  # For Google and NumPy style docstrings
     "sphinx.ext.viewcode",  # To include links to the source code
     "myst_parser",  # adding .md files
+    "sphinx_design",  # UI components
 ]
 
 myst_enable_extensions = [
@@ -47,9 +48,12 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_book_theme"
 html_theme_options = {
-    "style_nav_header_background": "#6af0ad",
+    "repository_url": "https://github.com/Kataglyphis/Kataglyphis-WebDavClient",
+    "use_repository_button": True,
+    "show_navbar_depth": 2,
+    "navigation_with_keys": True,
 }
 html_static_path = ["_static"]
 

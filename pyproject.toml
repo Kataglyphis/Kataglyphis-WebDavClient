@@ -63,7 +63,8 @@ tests = [
 
 docs = [
   "sphinx",
-  "sphinx-rtd-theme",
+  "sphinx-book-theme",
+  "sphinx-design",
   "myst-parser",
   "pyyaml",
   "cmake-format",
