@@ -1,24 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ARCH="${1:-}"  # optional; kept for parity with workflow matrix
+ARCH="${1:-}"
 
-log_info() {
-  echo "[ci-static-analysis] $1"
-}
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONTAINERHUB_ROOT="$(cd "$SCRIPT_DIR/../../ExternalLib/Kataglyphis-ContainerHub/linux/scripts/01-core" && pwd)"
 
-log_info "Starting static analysis pipeline"
+# shellcheck disable=SC1090
+source "$CONTAINERHUB_ROOT/build_common.sh" || { echo "Error: failed to source build_common.sh" >&2; exit 1; }
 
-git config --global --add safe.directory /workspace || true
+build_init "${WORKSPACE_ROOT:-$PWD}" "logs"
+
+build_log "Starting static analysis pipeline"
+
+if [ -d /workspace ]; then
+  git config --global --add safe.directory /workspace || true
+fi
 
 VENV_DIR=".venv_static_analysis"
 VENV_WAS_PRESENT=0
 
 if [ -d "$VENV_DIR" ]; then
-  log_info "Using existing virtual environment at: $VENV_DIR"
+  build_log "Using existing virtual environment at: $VENV_DIR"
   VENV_WAS_PRESENT=1
 else
-  log_info "Creating virtual environment at: $VENV_DIR"
+  build_log "Creating virtual environment at: $VENV_DIR"
   UV_VENV_CLEAR=1 uv venv "$VENV_DIR"
 fi
 
@@ -26,35 +32,43 @@ fi
 source "$VENV_DIR/bin/activate"
 
 if [ -f uv.lock ]; then
-  log_info "uv.lock found — using locked sync"
+  build_log "uv.lock found — using locked sync"
   uv -v sync --active --locked --dev --all-extras --no-build-isolation-package wxpython
 else
-  log_info "No uv.lock found — performing non-locked sync"
+  build_log "No uv.lock found — performing non-locked sync"
   uv -v sync --active --dev --all-extras --no-build-isolation-package wxpython
 fi
 
-log_info "Running codespell"
+build_log "Running codespell"
 uv run --active codespell kataglyphis_webdavclient tests docs/source/conf.py setup.py README.md || true
-# uv run --active mypy kataglyphis_webdavclient tests docs/source/conf.py setup.py || true
-log_info "Running bandit"
+
+build_log "Running bandit"
 uv run --active bandit -r kataglyphis_webdavclient \
   -x tests,.venv,.venv_static_analysis,ExternalLib,archive,docs/test_results || true
-log_info "Running vulture"
+
+build_log "Running vulture"
 uv run --active vulture kataglyphis_webdavclient tests docs/source/conf.py setup.py || true
-log_info "Running ruff format"
+
+build_log "Running ruff format"
 uv run --active ruff format kataglyphis_webdavclient tests docs/source/conf.py setup.py || true
-log_info "Running ruff check --fix"
+
+build_log "Running ruff check --fix"
 uv run --active ruff check --fix kataglyphis_webdavclient tests docs/source/conf.py setup.py || true
-log_info "Running ty check"
+
+build_log "Running ty check"
 uv run --active ty check || true
 
+deactivate || true
+
 if [ "$VENV_WAS_PRESENT" -eq 0 ]; then
-  log_info "Removing temporary virtual environment: $VENV_DIR"
+  build_log "Removing temporary virtual environment: $VENV_DIR"
   rm -rf "$VENV_DIR"
 fi
 
-log_info "Static analysis pipeline finished"
+build_log "Static analysis pipeline finished"
 
 if [ -n "$ARCH" ]; then
-  log_info "Static analysis completed for arch: $ARCH"
+  build_log "Static analysis completed for arch: $ARCH"
 fi
+
+build_finish 0
