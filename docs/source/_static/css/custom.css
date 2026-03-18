@@ -55,6 +55,10 @@ html[data-theme="dark"] {
   box-shadow: 0 8px 24px rgba(33, 82, 59, 0.1);
 }
 
+html[data-theme="dark"] .hero-section {
+  color: #000000 !important;
+}
+
 html[data-theme="dark"] .bd-sidebar-primary {
   background: linear-gradient(180deg, #101712 0%, #0d1410 100%) !important;
   border-right: 1px solid #2b3b33 !important;
