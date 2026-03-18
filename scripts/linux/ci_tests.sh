@@ -2,12 +2,14 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONTAINERHUB_ROOT="$(cd "$SCRIPT_DIR/../../ExternalLib/Kataglyphis-ContainerHub/linux/scripts/01-core" && pwd)"
+CONTAINERHUB_CORE="${SCRIPT_DIR}/../../ExternalLib/Kataglyphis-ContainerHub/linux/scripts/01-core"
 
 # shellcheck disable=SC1090
-source "$CONTAINERHUB_ROOT/build_common.sh" || { echo "Error: failed to source build_common.sh" >&2; exit 1; }
+source "$CONTAINERHUB_CORE/build_common.sh"
+# shellcheck disable=SC1090
+source "$CONTAINERHUB_CORE/python_uv.sh"
 
-if [[ "${1:-}" == "-h" ||"${1:-}" == "--help" ]]; then
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   cat <<EOF
 Usage: ci_tests.sh [package_name] [py_versions_string]
   package_name defaults to \$PACKAGE_NAME or 'orchestr_ant_ion'
@@ -38,15 +40,7 @@ mkdir -p docs/test_results
 TEST_EXIT=0
 
 for V in $PY_VERSIONS; do
-  IS_EXPERIMENTAL=0
-  for EXP_V in $EXPERIMENTAL_VERSIONS; do
-    if [[ "$V" == "$EXP_V" ]]; then
-      IS_EXPERIMENTAL=1
-      break
-    fi
-  done
-
-  if [[ "$IS_EXPERIMENTAL" -eq 1 ]]; then
+  if is_experimental_python "$V"; then
     build_log "[experimental] Running Python $V in non-blocking mode"
   else
     build_log "[stable] Running Python $V"
@@ -54,7 +48,7 @@ for V in $PY_VERSIONS; do
 
   VENV_DIR=".venv-${V}"
 
-  if [[ "$IS_EXPERIMENTAL" -eq 1 ]]; then
+  if is_experimental_python "$V"; then
     if ! uv venv "$VENV_DIR" --python="${V}"; then
       build_log "[experimental] Failed to create venv for $V; continuing"
       continue
@@ -64,7 +58,7 @@ for V in $PY_VERSIONS; do
   fi
 
   # shellcheck disable=SC1090
-  if [[ "$IS_EXPERIMENTAL" -eq 1 ]]; then
+  if is_experimental_python "$V"; then
     if ! source "$VENV_DIR/bin/activate"; then
       build_log "[experimental] Failed to activate venv for $V; continuing"
       rm -rf "$VENV_DIR"
@@ -74,35 +68,20 @@ for V in $PY_VERSIONS; do
     source "$VENV_DIR/bin/activate"
   fi
 
-  if [ -f uv.lock ]; then
-    build_log "uv.lock found — using locked sync"
-    if [[ "$IS_EXPERIMENTAL" -eq 1 ]]; then
-      if ! uv -v sync --active --locked --dev --all-extras; then
-        build_log "[experimental] Dependency sync failed for $V; continuing"
-        deactivate || true
-        rm -rf "$VENV_DIR"
-        continue
-      fi
-    else
-      uv -v sync --active --locked --dev --all-extras
+  if is_experimental_python "$V"; then
+    if ! uv_sync_project; then
+      build_log "[experimental] Dependency sync failed for $V; continuing"
+      deactivate || true
+      rm -rf "$VENV_DIR"
+      continue
     fi
   else
-    build_log "No uv.lock found — performing non-locked sync"
-    if [[ "$IS_EXPERIMENTAL" -eq 1 ]]; then
-      if ! uv -v sync --active --dev --all-extras; then
-        build_log "[experimental] Dependency sync failed for $V; continuing"
-        deactivate || true
-        rm -rf "$VENV_DIR"
-        continue
-      fi
-    else
-      uv -v sync --active --dev --all-extras
-    fi
+    uv_sync_project
   fi
 
-  if [[ "$IS_EXPERIMENTAL" -eq 1 ]]; then
-    uv run --active pytest tests/unit -v \
-      --cov="$PACKAGE_NAME"\
+  if is_experimental_python "$V"; then
+    uv_run pytest tests/unit -v \
+      --cov="$PACKAGE_NAME" \
       --cov-report=term-missing \
       --cov-report="html:docs/test_results/coverage-html-${V}" \
       --cov-report="xml:docs/test_results/coverage-${V}.xml" \
@@ -114,7 +93,7 @@ for V in $PY_VERSIONS; do
       --md-report-output "docs/test_results/pytest-report-${V}.md" \
       || build_log "[experimental] Unit tests failed for $V; continuing"
   else
-    uv run --active pytest tests/unit -v \
+    uv_run pytest tests/unit -v \
       --cov="$PACKAGE_NAME" \
       --cov-report=term-missing \
       --cov-report="html:docs/test_results/coverage-html-${V}" \
@@ -127,14 +106,14 @@ for V in $PY_VERSIONS; do
       --md-report-output "docs/test_results/pytest-report-${V}.md" || TEST_EXIT=$?
   fi
 
-  uv run --active python bench/demo_cprofile.py || build_log "demo_cprofile.py skipped"
-  uv run --active python bench/demo_line_profiler.py || build_log "demo_line_profiler.py skipped"
-  uv run --active -m memory_profiler bench/demo_memory_profiling.py || build_log "memory profiling skipped"
+  uv_run python bench/demo_cprofile.py || build_log "demo_cprofile.py skipped"
+  uv_run python bench/demo_line_profiler.py || build_log "demo_line_profiler.py skipped"
+  uv_run -m memory_profiler bench/demo_memory_profiling.py || build_log "memory profiling skipped"
 
-  uv run --active py-spy record --rate 200 --duration 10 -o docs/test_results/profile.svg -- python bench/demo_py_spy.py \
+  uv_run py-spy record --rate 200 --duration 10 -o docs/test_results/profile.svg -- python bench/demo_py_spy.py \
     || build_log "py-spy profiling skipped (may require a longer-running process or py-spy missing)"
 
-  uv run --active pytest bench/demo_pytest_benchmark.py || build_log "benchmark tests skipped or failed"
+  uv_run pytest bench/demo_pytest_benchmark.py || build_log "benchmark tests skipped or failed"
 
   deactivate || true
   rm -rf "$VENV_DIR"

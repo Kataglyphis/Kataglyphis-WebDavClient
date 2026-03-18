@@ -4,13 +4,14 @@ set -euo pipefail
 COVERAGE_VERSION="${1:-3.13}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONTAINERHUB_ROOT="$(cd "$SCRIPT_DIR/../../ExternalLib/Kataglyphis-ContainerHub/linux/scripts/01-core" && pwd)"
+CONTAINERHUB_CORE="${SCRIPT_DIR}/../../ExternalLib/Kataglyphis-ContainerHub/linux/scripts/01-core"
 
 # shellcheck disable=SC1090
-source "$CONTAINERHUB_ROOT/build_common.sh" || { echo "Error: failed to source build_common.sh" >&2; exit 1; }
+source "$CONTAINERHUB_CORE/build_common.sh"
+# shellcheck disable=SC1090
+source "$CONTAINERHUB_CORE/python_uv.sh"
 
 detect_workspace
-
 build_init "$WORKSPACE_ROOT" "logs"
 
 export PATH="$WORKSPACE_ROOT/flutter/bin:$PATH"
@@ -18,7 +19,7 @@ git config --global --add safe.directory "$WORKSPACE_ROOT" || true
 
 VENV_DIR="$WORKSPACE_ROOT/.venv-docs"
 
-build_step "Setup Docs Virtual Environment" bash -c "
+build_run_step "Setup Docs Virtual Environment" bash -c "
   if [ -f '$VENV_DIR/bin/activate' ]; then
     info 'Using existing docs venv at $VENV_DIR'
   else
@@ -30,15 +31,7 @@ build_step "Setup Docs Virtual Environment" bash -c "
 # shellcheck disable=SC1090
 source "$VENV_DIR/bin/activate"
 
-build_step "Sync Dependencies" bash -c "
-  if [ -f uv.lock ]; then
-    info 'uv.lock found — using locked sync'
-    uv -v sync --active --locked --dev --all-extras --no-build-isolation-package wxpython
-  else
-    info 'No uv.lock found — performing non-locked sync'
-    uv -v sync --active --dev --all-extras --no-build-isolation-package wxpython
-  fi
-"
+build_run_step "Sync Dependencies" uv_sync_project --no-wxpython
 
 cp "$WORKSPACE_ROOT/README.md" "$WORKSPACE_ROOT/docs/source/README.md"
 cp "$WORKSPACE_ROOT/CHANGELOG.md" "$WORKSPACE_ROOT/docs/source/CHANGELOG.md"
@@ -102,7 +95,7 @@ for md_file in "$SRC"/pytest-report-*.md; do
   fi
 done
 
-build_step "Build Sphinx Documentation" bash -c "cd '$WORKSPACE_ROOT/docs' && make html"
+build_run_step "Build Sphinx Documentation" bash -c "cd '$WORKSPACE_ROOT/docs' && make html"
 
 if [ "$WORKSPACE_ROOT" = "/workspace" ] && [ -d /workspace ]; then
   OWNER_UID=$(stat -c "%u" /workspace)

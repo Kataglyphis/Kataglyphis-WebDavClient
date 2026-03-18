@@ -2,33 +2,35 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONTAINERHUB_ROOT="$(cd "$SCRIPT_DIR/../../ExternalLib/Kataglyphis-ContainerHub/linux/scripts/01-core" && pwd)"
+CONTAINERHUB_CORE="${SCRIPT_DIR}/../../ExternalLib/Kataglyphis-ContainerHub/linux/scripts/01-core"
+CONTAINERHUB_DEPS="${SCRIPT_DIR}/../../ExternalLib/Kataglyphis-ContainerHub/linux/scripts"
 
 # shellcheck disable=SC1090
-source "$CONTAINERHUB_ROOT/build_common.sh" || { echo "Error: failed to source build_common.sh" >&2; exit 1; }
+source "$CONTAINERHUB_CORE/build_common.sh"
+# shellcheck disable=SC1090
+source "$CONTAINERHUB_CORE/python_uv.sh"
+# shellcheck disable=SC1090
+source "$CONTAINERHUB_CORE/common.sh"
 
 detect_workspace
-
 build_init "$WORKSPACE_ROOT" "logs"
 
 export PATH="$WORKSPACE_ROOT/flutter/bin:$PATH"
 git config --global --add safe.directory "$WORKSPACE_ROOT" || true
 
-build_step "Ensure patchelf" bash -c "
+build_run_step "Ensure patchelf" bash -c "
   if command -v patchelf >/dev/null 2>&1; then
     build_log 'patchelf already installed'
   else
-    SUDO_CMD=''
-    if command -v sudo >/dev/null 2>&1; then
-      SUDO_CMD='sudo'
-    fi
-    \$SUDO_CMD apt-get update
-    \$SUDO_CMD apt-get install -y patchelf
+    require_sudo
+    apt_update_once
+    \$SUDO apt-get install -y patchelf
   fi
 "
 
 VENV_SOURCES="$WORKSPACE_ROOT/.venv_packaging_sources"
-build_step "Create Source Packaging Environment" bash -c "
+
+build_run_step "Create Source Packaging Environment" bash -c "
   if [ -f '$VENV_SOURCES/bin/activate' ]; then
     info 'Using existing source packaging venv at $VENV_SOURCES'
   else
@@ -40,24 +42,17 @@ build_step "Create Source Packaging Environment" bash -c "
 # shellcheck disable=SC1090
 source "$VENV_SOURCES/bin/activate"
 
-build_step "Sync Source Environment Dependencies" bash -c "
-  if [ -f uv.lock ]; then
-    info 'uv.lock found — using locked sync'
-    uv -v sync --active --locked --dev --all-extras --no-build-isolation-package wxpython
-  else
-    info 'No uv.lock found — performing non-locked sync'
-    uv -v sync --active --dev --all-extras --no-build-isolation-package wxpython
-  fi
-"
+build_run_step "Sync Source Environment Dependencies" uv_sync_project --no-wxpython
 
-build_step "Build Source Package" uv build
+build_run_step "Build Source Package" uv build
 
 deactivate || true
 
 export CYTHONIZE="True"
 
 VENV_BINARIES="$WORKSPACE_ROOT/.venv_packaging_binaries"
-build_step "Create Binary Packaging Environment" bash -c "
+
+build_run_step "Create Binary Packaging Environment" bash -c "
   if [ -f '$VENV_BINARIES/bin/activate' ]; then
     info 'Using existing binary packaging venv at $VENV_BINARIES'
   else
@@ -69,17 +64,9 @@ build_step "Create Binary Packaging Environment" bash -c "
 # shellcheck disable=SC1090
 source "$VENV_BINARIES/bin/activate"
 
-build_step "Sync Binary Environment Dependencies" bash -c "
-  if [ -f uv.lock ]; then
-    info 'uv.lock found — using locked sync'
-    uv -v sync --active --locked --dev --all-extras --no-build-isolation-package wxpython
-  else
-    info 'No uv.lock found — performing non-locked sync'
-    uv -v sync --active --dev --all-extras --no-build-isolation-package wxpython
-  fi
-"
+build_run_step "Sync Binary Environment Dependencies" uv_sync_project --no-wxpython
 
-build_step "Build Binary Package" uv build
+build_run_step "Build Binary Package" uv build
 
 mkdir -p dist repaired
 shopt -s nullglob
@@ -87,7 +74,7 @@ shopt -s nullglob
 build_log "Found wheels:"
 ls -la dist || true
 
-build_step "Repair Wheels with auditwheel" bash -c "
+build_run_step "Repair Wheels with auditwheel" bash -c "
   for whl in dist/*.whl; do
     build_log \"Inspecting wheel: \$whl\"
     if auditwheel show \"\$whl\" >/dev/null 2>&1; then
