@@ -44,11 +44,18 @@ reorganisation.
 | Opting a commit into the heavy CI lanes | `docs/ci-build-triggers.md` |
 | The five shell-safety bug classes | ContainerHub `AGENTS.md` § *Shell safety conventions* |
 
-**The four `scripts/linux/ci_*.sh` are wrappers, not implementations.** Each is a
-guard plus `exec bash "$_DRIVER"` into
+**The four `scripts/linux/ci_*.sh` are wrappers, not implementations.** Each
+sources `scripts/linux/lib/containerhub.sh` and calls `containerhub_exec` into
 `ExternalLib/Kataglyphis-ContainerHub/linux/scripts/02-toolchain/python/`. When
 behaviour needs to change, change it **upstream** — a fix made in the wrapper is
 a fix the other Python consumers never get.
+
+`lib/containerhub.sh` is a verbatim copy of ContainerHub's
+[`shared/linux/templates/containerhub.sh`](ExternalLib/Kataglyphis-ContainerHub/shared/linux/templates/README.md)
+— the bash twin of `Resolve-BuildModule.ps1`, and the only other file that
+cannot live upstream because it is what *finds* the submodule. Do not hand-edit
+it; sync from upstream. It owns the not-found guard and the `WORKSPACE_ROOT`
+export that every wrapper used to repeat.
 
 | Wrapper | Upstream driver | Local addition |
 | --- | --- | --- |
@@ -80,13 +87,15 @@ written out rather than linked.
   This stays local deliberately — no second consumer needs it, and the
   two-consumer rule says one consumer is not enough to justify going upstream.
   If a second binary-wheel project appears, move it up then.
-- **`WORKSPACE_ROOT` must be exported by every wrapper.** Upstream's
+- **`WORKSPACE_ROOT` is handled for you — do not remove it.** Upstream's
   `detect_workspace` derives it from the sourcing script's location, which for a
   *delegated* driver resolves inside `ExternalLib/Kataglyphis-ContainerHub/` —
-  so every tool would run against the submodule tree instead of this repo. Each
-  wrapper pins it to the repo root; `detect_workspace` honours a pre-set value
-  and still overrides to `/workspace` in the container, so CI is unaffected.
-  This is the single most likely thing to break if a wrapper is "simplified".
+  so every tool would run against the submodule tree instead of this repo.
+  `containerhub_exec` pins it to the repo root before handing off (it used to be
+  repeated in every wrapper); `detect_workspace` honours a pre-set value and
+  still overrides to `/workspace` in the container, so CI is unaffected. Listed
+  here only because a wrapper that stops going through `containerhub_exec` loses
+  it silently.
 - **Do not re-add a `PACKAGE_NAME` default.** The pre-wrapper `ci_tests.sh`
   defaulted it to `orchestr_ant_ion` — the *sibling* project's name, copy-pasted.
   It only ever worked because CI passed the name explicitly. Upstream derives it
