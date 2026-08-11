@@ -1,97 +1,30 @@
 #!/usr/bin/env bash
+# ci_packaging.sh - project wrapper around ContainerHub's generic Python package
+# builder (linux/scripts/02-toolchain/python/ci_packaging.sh).
+#
+# Keeps ONE local step: patchelf. The binary wheel build needs it on the runner
+# and upstream's driver does not install it. Left here rather than upstreamed
+# because no second consumer needs it - the two-consumer rule in ContainerHub's
+# AGENTS.md.
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONTAINERHUB_CORE="${SCRIPT_DIR}/../../ExternalLib/Kataglyphis-ContainerHub/linux/scripts/01-core"
-CONTAINERHUB_DEPS="${SCRIPT_DIR}/../../ExternalLib/Kataglyphis-ContainerHub/linux/scripts"
+_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_DRIVER="${_SCRIPT_DIR}/../../ExternalLib/Kataglyphis-ContainerHub/linux/scripts/02-toolchain/python/ci_packaging.sh"
+[ -f "$_DRIVER" ] || { echo "Error: ContainerHub driver not found at $_DRIVER. Run: git submodule update --init --recursive ExternalLib/Kataglyphis-ContainerHub" >&2; exit 1; }
 
-# shellcheck disable=SC1090
-source "$CONTAINERHUB_CORE/build_common.sh"
-# shellcheck disable=SC1090
-source "$CONTAINERHUB_CORE/python_uv.sh"
-# shellcheck disable=SC1090
-source "$CONTAINERHUB_CORE/common.sh"
+if ! command -v patchelf >/dev/null 2>&1; then
+  echo "[INFO] Installing patchelf (needed to repair the binary wheel's RPATHs)"
+  SUDO=""
+  if [ "$(id -u)" -ne 0 ] && command -v sudo >/dev/null 2>&1; then SUDO="sudo"; fi
+  $SUDO apt-get update -y && $SUDO apt-get install -y patchelf
+fi
 
-detect_workspace
-build_init "$WORKSPACE_ROOT" "logs"
+# WORKSPACE_ROOT must be THIS repo, not the submodule. Upstream's
+# detect_workspace derives it from the sourcing script's own location, which for
+# a delegated driver is .../ExternalLib/Kataglyphis-ContainerHub/linux/scripts -
+# so every tool would run against the submodule tree. detect_workspace honours a
+# pre-set value, and still overrides to /workspace in the container, so CI is
+# unaffected.
+export WORKSPACE_ROOT="${WORKSPACE_ROOT:-$(cd "${_SCRIPT_DIR}/../.." && pwd)}"
 
-export PATH="$WORKSPACE_ROOT/flutter/bin:$PATH"
-git config --global --add safe.directory "$WORKSPACE_ROOT" || true
-
-build_run_step "Ensure patchelf" bash -c "
-  if command -v patchelf >/dev/null 2>&1; then
-    build_log 'patchelf already installed'
-  else
-    require_sudo
-    apt_update_once
-    \$SUDO apt-get install -y patchelf
-  fi
-"
-
-VENV_SOURCES="$WORKSPACE_ROOT/.venv_packaging_sources"
-
-build_run_step "Create Source Packaging Environment" bash -c "
-  if [ -f '$VENV_SOURCES/bin/activate' ]; then
-    info 'Using existing source packaging venv at $VENV_SOURCES'
-  else
-    info 'Creating source packaging venv at $VENV_SOURCES'
-    uv venv '$VENV_SOURCES'
-  fi
-"
-
-# shellcheck disable=SC1090
-source "$VENV_SOURCES/bin/activate"
-
-build_run_step "Sync Source Environment Dependencies" uv_sync_project --no-wxpython
-
-build_run_step "Build Source Package" uv build
-
-deactivate || true
-
-export CYTHONIZE="True"
-
-VENV_BINARIES="$WORKSPACE_ROOT/.venv_packaging_binaries"
-
-build_run_step "Create Binary Packaging Environment" bash -c "
-  if [ -f '$VENV_BINARIES/bin/activate' ]; then
-    info 'Using existing binary packaging venv at $VENV_BINARIES'
-  else
-    info 'Creating binary packaging venv at $VENV_BINARIES'
-    uv venv '$VENV_BINARIES'
-  fi
-"
-
-# shellcheck disable=SC1090
-source "$VENV_BINARIES/bin/activate"
-
-build_run_step "Sync Binary Environment Dependencies" uv_sync_project --no-wxpython
-
-build_run_step "Build Binary Package" uv build
-
-mkdir -p dist repaired
-shopt -s nullglob
-
-build_log "Found wheels:"
-ls -la dist || true
-
-build_run_step "Repair Wheels with auditwheel" bash -c "
-  for whl in dist/*.whl; do
-    build_log \"Inspecting wheel: \$whl\"
-    if auditwheel show \"\$whl\" >/dev/null 2>&1; then
-      build_log \"  Platform wheel detected -> repairing: \$whl\"
-      auditwheel repair \"\$whl\" -w repaired/ || { build_err \"auditwheel failed on \$whl\"; exit 1; }
-    else
-      build_log \"  Pure/Python wheel detected -> copying unchanged: \$whl\"
-      cp \"\$whl\" repaired/
-    fi
-  done
-"
-
-rm -f dist/*.whl || true
-mv repaired/*.whl dist/ || true
-rmdir repaired || true
-
-build_log "Final wheels in dist/:"
-ls -la dist || true
-
-build_finish 0
+exec bash "$_DRIVER" "$@"

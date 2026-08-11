@@ -1,61 +1,22 @@
 #!/usr/bin/env bash
+# ci_static_analysis.sh - project wrapper around ContainerHub's generic Python
+# static-analysis runner (linux/scripts/02-toolchain/python/ci_static_analysis.sh).
+#
+# The local copy reimplemented the same codespell/bandit/vulture/ruff/ty pipeline
+# with its own venv lifecycle. Upstream owns both and derives the package name
+# from pyproject.toml.
 set -euo pipefail
 
-ARCH="${1:-}"
+_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_DRIVER="${_SCRIPT_DIR}/../../ExternalLib/Kataglyphis-ContainerHub/linux/scripts/02-toolchain/python/ci_static_analysis.sh"
+[ -f "$_DRIVER" ] || { echo "Error: ContainerHub driver not found at $_DRIVER. Run: git submodule update --init --recursive ExternalLib/Kataglyphis-ContainerHub" >&2; exit 1; }
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONTAINERHUB_CORE="${SCRIPT_DIR}/../../ExternalLib/Kataglyphis-ContainerHub/linux/scripts/01-core"
+# WORKSPACE_ROOT must be THIS repo, not the submodule. Upstream's
+# detect_workspace derives it from the sourcing script's own location, which for
+# a delegated driver is .../ExternalLib/Kataglyphis-ContainerHub/linux/scripts -
+# so every tool would run against the submodule tree. detect_workspace honours a
+# pre-set value, and still overrides to /workspace in the container, so CI is
+# unaffected.
+export WORKSPACE_ROOT="${WORKSPACE_ROOT:-$(cd "${_SCRIPT_DIR}/../.." && pwd)}"
 
-# shellcheck disable=SC1090
-source "$CONTAINERHUB_CORE/build_common.sh"
-# shellcheck disable=SC1090
-source "$CONTAINERHUB_CORE/python_uv.sh"
-
-detect_workspace
-build_init "$WORKSPACE_ROOT" "logs"
-
-build_log "Starting static analysis pipeline"
-
-if [ -d /workspace ]; then
-  git config --global --add safe.directory /workspace || true
-fi
-
-VENV_DIR=".venv_static_analysis"
-
-build_run_step "Setup Virtual Environment" bash -c "
-  if [ -d '$VENV_DIR' ]; then
-    build_log 'Using existing virtual environment at: $VENV_DIR'
-  else
-    build_log 'Creating virtual environment at: $VENV_DIR'
-    uv venv '$VENV_DIR' --clear
-  fi
-"
-
-# shellcheck disable=SC1090
-source "$VENV_DIR/bin/activate"
-
-build_run_step "Sync Dependencies" uv_sync_project --no-wxpython
-
-build_run_step "Run codespell" uv_run codespell kataglyphis_webdavclient tests docs/source/conf.py setup.py README.md || true
-
-build_run_step "Run bandit" uv_run bandit -r kataglyphis_webdavclient \
-  -x tests,.venv,.venv_static_analysis,ExternalLib,archive,docs/test_results || true
-
-build_run_step "Run vulture" uv_run vulture kataglyphis_webdavclient tests docs/source/conf.py setup.py || true
-
-build_run_step "Run ruff format" uv_run ruff format kataglyphis_webdavclient tests docs/source/conf.py setup.py || true
-
-build_run_step "Run ruff check --fix" uv_run ruff check --fix kataglyphis_webdavclient tests docs/source/conf.py setup.py || true
-
-build_run_step "Run ty check" uv_run ty check || true
-
-deactivate || true
-uv_venv_remove "$VENV_DIR"
-
-build_log "Static analysis pipeline finished"
-
-if [ -n "$ARCH" ]; then
-  build_log "Static analysis completed for arch: $ARCH"
-fi
-
-build_finish 0
+exec bash "$_DRIVER" "$@"
