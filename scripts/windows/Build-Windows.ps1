@@ -11,20 +11,21 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 Set-Location $repoRoot
 
-$containerHubModulesPath = Join-Path $repoRoot "ExternalLib\Kataglyphis-ContainerHub\windows\scripts\modules"
-$buildCommonModulePath = Join-Path $containerHubModulesPath "WindowsBuild.Common.psm1"
-$uvCommonModulePath = Join-Path $containerHubModulesPath "WindowsUv.Common.psm1"
+# Modules resolve through the shared bootstrap (a verbatim copy of
+# ContainerHub's shared/windows/templates/Resolve-BuildModule.ps1) instead of a
+# hard-coded submodule path: a module that moves upstream is picked up without
+# editing this script, and a missing submodule reports the exact
+# `git submodule update` command rather than a bare path.
+. (Join-Path $PSScriptRoot 'Resolve-BuildModule.ps1')
 
-if (-not (Test-Path -Path $buildCommonModulePath)) {
-	throw "Required reusable module not found: $buildCommonModulePath"
-}
-
-if (-not (Test-Path -Path $uvCommonModulePath)) {
-	throw "Required reusable module not found: $uvCommonModulePath"
-}
-
-Import-Module $buildCommonModulePath -Force
-Import-Module $uvCommonModulePath -Force
+# Dependency order: Shared, then Build, then what builds on them.
+# (Import-BuildModule pulls WindowsScripts.Shared in regardless — a nested
+# import inside a .psm1 is module-private and never reaches this session.)
+Import-BuildModule @(
+	'WindowsScripts.Shared'
+	'WindowsBuild.Common'
+	'WindowsUv.Common'
+)
 
 $script:BuildContext = New-BuildContext -Workspace $repoRoot -LogDir $LogDir -StopOnError:$StopOnError
 $script:BuildContext.SuppressConsoleOutput = $true
